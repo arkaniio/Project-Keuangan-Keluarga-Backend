@@ -10,17 +10,14 @@ import (
 	"project-keuangan-keluarga/model"
 )
 
-// ExampleRepository defines the contract for the example data-access layer.
 type UserRepository interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
 }
 
-// exampleRepository is the concrete implementation backed by PostgreSQL via sqlx.
 type repoUser struct {
 	db *sqlx.DB
 }
 
-// NewExampleRepository constructs a new ExampleRepository.
 func NewExampleRepository(db *sqlx.DB) UserRepository {
 	return &repoUser{db: db}
 }
