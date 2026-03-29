@@ -28,15 +28,11 @@ func UserRoutes(userCtrl *controller.ControllerHandler) *chi.Mux {
 	})
 
 	// API v1 routes
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Route("/users", func(r chi.Router) {
-			r.Post("/register", userCtrl.Register)
-			r.Post("/login", userCtrl.Login)
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.MiddlewareAuth)
-				r.Get("/profile", userCtrl.GetProfile)
-			})
-		})
+	r.Post("/register", userCtrl.Register)
+	r.Post("/login", userCtrl.Login)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.MiddlewareAuth)
+		r.Get("/profile", userCtrl.GetProfile)
 	})
 
 	return r

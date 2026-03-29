@@ -25,3 +25,17 @@ func ParsingPayloadUser(payload model.Payload) (*model.User, error) {
 		UpdatedAt:   time.Now().UTC(),
 	}, nil
 }
+
+func ParsingPayloadKeuangan(payload model.PayloadKeuangan) (*model.Keuangan, error) {
+	return &model.Keuangan{
+		Id:                uuid.New(),
+		UserId:            payload.UserId,
+		JenisTransaksi:    payload.JenisTransaksi,
+		JumlahPengeluaran: payload.JumlahPengeluaran,
+		JumlahPemasukan:   payload.JumlahPemasukan,
+		Kategori:          payload.Kategori,
+		Tanggal:           payload.Tanggal,
+		CreatedAt:         time.Now().UTC(),
+		UpdatedAt:         time.Now().UTC(),
+	}, nil
+}

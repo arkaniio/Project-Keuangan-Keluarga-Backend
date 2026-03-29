@@ -11,7 +11,6 @@ import (
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -36,13 +35,7 @@ func (s *ControllerHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var validate *validator.Validate
-	validate = validator.New()
-	if err := validate.Struct(&payloads); err != nil {
-		var errors []string
-		for _, Err := range err.(validator.ValidationErrors) {
-			errors = append(errors, Err.Error())
-		}
+	if err := utils.ValidatePayloads(payloads); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate JSON", err.Error())
 		return
 	}
@@ -83,13 +76,7 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var validate *validator.Validate
-	validate = validator.New()
-	if err := validate.Struct(&payloadsLogin); err != nil {
-		var errors []string
-		for _, Err := range err.(validator.ValidationErrors) {
-			errors = append(errors, Err.Error())
-		}
+	if err := utils.ValidatePayloads(payloadsLogin); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate JSON", err.Error())
 		return
 	}

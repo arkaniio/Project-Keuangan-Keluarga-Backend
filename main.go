@@ -15,6 +15,7 @@ import (
 	"project-keuangan-keluarga/routes"
 	"project-keuangan-keluarga/service"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -37,13 +38,24 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	userCtrl := controller.NewUserController(userSvc)
 
+	// keuangan injection
+	keuanganRepo := repository.NewKeuanganRepository(db)
+	keuanganSvc := service.NewKeuanganService(keuanganRepo)
+	keuanganCtrl := controller.NewControllerHandlerKeuangan(keuanganSvc)
+
 	// ── 3. Routes ────────────────────────────────────────────────
+	route := chi.NewRouter()
+	subRoiter := route.With()
 	router := routes.UserRoutes(userCtrl)
+	router_keuangan := routes.KeuanganRoutes(keuanganCtrl)
+
+	subRoiter.Mount("/api/v1/users", router)
+	subRoiter.Mount("/api/v1/keuangans", router_keuangan)
 
 	// ── 4. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{
 		Addr:         ":8080",
-		Handler:      router,
+		Handler:      route,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
