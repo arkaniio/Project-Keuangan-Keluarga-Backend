@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"time"
 
+	"project-keuangan-keluarga/middleware"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 type ControllerHandler struct {
@@ -122,5 +124,33 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "Success to login", token)
+
+}
+
+func (s *ControllerHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+
+	user_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", err.Error())
+		return
+	}
+	if user_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", false)
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	users, err := s.service.GetUserById(ctx, user_id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", err.Error())
+		return
+	}
+	if users == nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", false)
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Success to get the user id from token!", users)
 
 }

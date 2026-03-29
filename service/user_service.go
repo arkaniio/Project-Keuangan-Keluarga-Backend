@@ -5,11 +5,14 @@ import (
 
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
+
+	"github.com/google/uuid"
 )
 
 type UserService interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
 	GetUserByEmail(email string) (*model.User, error)
+	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
 type repoUser struct {
@@ -26,4 +29,8 @@ func (s *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 
 func (s *repoUser) GetUserByEmail(email string) (*model.User, error) {
 	return s.repo.GetUserByEmail(email)
+}
+
+func (s *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error) {
+	return s.repo.GetUserById(ctx, id)
 }

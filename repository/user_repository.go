@@ -88,10 +88,14 @@ func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, 
 		FROM users WHERE id = $1;
 	`
 
-	if err := r.db.GetContext(ctx, &model.User{}, query, id); err != nil {
-		return nil, err
+	var user model.User
+	if err := r.db.GetContext(ctx, &user, query, id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("Failed to get the data user with id")
+		}
+		return nil, fmt.Errorf("Failed to get the data user with id")
 	}
 
-	return nil, nil
+	return &user, nil
 
 }
