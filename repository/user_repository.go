@@ -84,7 +84,7 @@ func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error) {
 
 	query := `
-		SELECT id, name, email, password, role, created_at, updated_at 
+		SELECT id, name, email, password, role, profile_img, created_at, updated_at 
 		FROM users WHERE id = $1;
 	`
 

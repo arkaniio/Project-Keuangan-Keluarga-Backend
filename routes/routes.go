@@ -32,7 +32,10 @@ func UserRoutes(userCtrl *controller.ControllerHandler) *chi.Mux {
 		r.Route("/users", func(r chi.Router) {
 			r.Post("/register", userCtrl.Register)
 			r.Post("/login", userCtrl.Login)
-			r.Get("/profile", userCtrl.GetProfile)
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.MiddlewareAuth)
+				r.Get("/profile", userCtrl.GetProfile)
+			})
 		})
 	})
 

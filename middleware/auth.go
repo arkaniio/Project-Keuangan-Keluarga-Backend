@@ -19,7 +19,7 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		token := strings.TrimPrefix("Bearer ", header)
+		token := strings.TrimPrefix(header, "Bearer ")
 		if token == "" {
 			utils.ResponseError(w, http.StatusBadRequest, "Failed to get the strings token for auth!", false)
 			return
@@ -31,9 +31,15 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx_id := context.WithValue(r.Context(), "id", claims_data.Id)
-		ctx_role := context.WithValue(r.Context(), "role", claims_data.Role)
+		user_id_parse, err := uuid.Parse(claims_data.Id)
+		if err != nil {
+			utils.ResponseError(w, http.StatusBadRequest, "Failed to parse the id!", err.Error())
+			return
+		}
+		ctx_id := context.WithValue(r.Context(), "id", user_id_parse)
 		r = r.WithContext(ctx_id)
+
+		ctx_role := context.WithValue(r.Context(), "role", claims_data.Role)
 		r = r.WithContext(ctx_role)
 
 		next.ServeHTTP(w, r)
@@ -43,32 +49,34 @@ func MiddlewareAuth(next http.Handler) http.Handler {
 
 func GetTokenId(w http.ResponseWriter, r *http.Request) (uuid.UUID, error) {
 
-	data_id, ok := r.Context().Value("id").(uuid.UUID)
+	data_id := r.Context().Value("id")
+	user_id, ok := data_id.(uuid.UUID)
 	if !ok {
-		utils.ResponseError(w, http.StatusBadRequest, "failed to convert into a uuid", false)
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to convert into a uuid", false)
 		return uuid.Nil, errors.New("Failed to convert into a uuid!")
 	}
-	if data_id == uuid.Nil {
+	if user_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the id from the token!", false)
 		return uuid.Nil, errors.New("Failed to get the id from the token!")
 	}
 
-	return data_id, nil
+	return user_id, nil
 
 }
 
 func GetTokenRole(w http.ResponseWriter, r *http.Request) (string, error) {
 
-	data_role, ok := r.Context().Value("role").(string)
+	data_role := r.Context().Value("role")
+	user_role, ok := data_role.(string)
 	if !ok {
 		utils.ResponseError(w, http.StatusBadRequest, "failed to convert into a string", false)
 		return "", errors.New("Failed to convert into a string!")
 	}
-	if data_role == "" {
+	if user_role == "" {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the role from the token!", false)
 		return "", errors.New("Failed to get the role from the token!")
 	}
 
-	return data_role, nil
+	return user_role, nil
 
 }
