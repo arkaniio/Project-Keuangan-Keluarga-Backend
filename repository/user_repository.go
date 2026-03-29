@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -13,7 +14,7 @@ import (
 
 type UserRepository interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
-	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
@@ -61,7 +62,7 @@ func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 	return nil
 }
 
-func (r *repoUser) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 
 	query := `
 		SELECT id, name, email, password, role, profile_img, created_at, updated_at 
@@ -69,8 +70,11 @@ func (r *repoUser) GetUserByEmail(ctx context.Context, email string) (*model.Use
 	`
 
 	var user model.User
-	if err := r.db.GetContext(ctx, &user, query, email); err != nil {
-		return nil, err
+	if err := r.db.Get(&user, query, email); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Failed to get the email!")
 	}
 
 	return &user, nil

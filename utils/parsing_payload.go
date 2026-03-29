@@ -2,6 +2,7 @@ package utils
 
 import (
 	"project-keuangan-keluarga/model"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -20,7 +21,7 @@ func ParsingPayloadUser(payload model.Payload) (*model.User, error) {
 		Password:    hashing_password,
 		Role:        payload.Role,
 		Profile_img: payload.Profile_img,
-		CreatedAt:   payload.CreatedAt,
-		UpdatedAt:   payload.UpdatedAt,
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
 	}, nil
 }

@@ -44,10 +44,13 @@ func (s *ControllerHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
-	defer cancle()
+	users, err := utils.ParsingPayloadUser(payloads)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to exect the payload to user!", err.Error())
+		return
+	}
 
-	users_email, err := s.service.GetUserByEmail(ctx, payloads.Email)
+	users_email, err := s.service.GetUserByEmail(users.Email)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get user by email", err.Error())
 		return
@@ -57,18 +60,15 @@ func (s *ControllerHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := utils.ParsingPayloadUser(payloads)
-	if err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to exect the payload to user!", err.Error())
-		return
-	}
+	utils.ResponseSuccess(w, http.StatusOK, "Success to create new user", nil)
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
 
 	if err := s.service.CreateNewUser(ctx, users); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to create new user", err.Error())
 		return
 	}
-
-	utils.ResponseSuccess(w, http.StatusOK, "Success to create new user", nil)
 
 }
 
@@ -96,10 +96,7 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
-	defer cancle()
-
-	users, err := s.service.GetUserByEmail(ctx, payloadsLogin.Email)
+	users, err := s.service.GetUserByEmail(payloadsLogin.Email)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get user by email", err.Error())
 		return
