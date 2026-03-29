@@ -14,10 +14,17 @@ import (
 	"project-keuangan-keluarga/repository"
 	"project-keuangan-keluarga/routes"
 	"project-keuangan-keluarga/service"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	// ── 1. Database ──────────────────────────────────────────────
+
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("[MAIN] Failed to load .env file: %v", err)
+	}
+
 	dbCfg := config.DefaultDatabaseConfig()
 	db, err := config.InitDB(dbCfg)
 	if err != nil {
@@ -31,7 +38,7 @@ func main() {
 	userCtrl := controller.NewUserController(userSvc)
 
 	// ── 3. Routes ────────────────────────────────────────────────
-	router := routes.Setup(userCtrl)
+	router := routes.UserRoutes(userCtrl)
 
 	// ── 4. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{

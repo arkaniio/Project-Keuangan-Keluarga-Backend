@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	"project-keuangan-keluarga/model"
@@ -12,6 +13,8 @@ import (
 
 type UserRepository interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
+	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
+	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
 }
 
 type repoUser struct {
@@ -37,13 +40,13 @@ func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 	defer tx.Rollback()
 
 	query := `
-		INSERT INTO users(id, name, email, password, role, created_at, updated_at)
-		VALUES($1, $2, $3, $4, $5, $6, $7);
+		INSERT INTO users(id, name, email, password, role, profile_img, created_at, updated_at)
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8);
 	`
 
-	rows, err := tx.ExecContext(ctx, query, user.Id, user.Name, user.Email, user.Password, user.Role, user.CreatedAt, user.UpdatedAt)
+	rows, err := tx.ExecContext(ctx, query, user.Id, user.Name, user.Email, user.Password, user.Role, user.Profile_img, user.CreatedAt, user.UpdatedAt)
 	if err != nil {
-		return errors.New("Failed to exec the context")
+		return errors.New("Failed to exec the context" + err.Error())
 	}
 
 	rows_dected, _ := rows.RowsAffected()
@@ -56,4 +59,35 @@ func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 	}
 
 	return nil
+}
+
+func (r *repoUser) GetUserByEmail(ctx context.Context, email string) (*model.User, error) {
+
+	query := `
+		SELECT id, name, email, password, role, profile_img, created_at, updated_at 
+		FROM users WHERE email = $1;
+	`
+
+	var user model.User
+	if err := r.db.GetContext(ctx, &user, query, email); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+
+}
+
+func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error) {
+
+	query := `
+		SELECT id, name, email, password, role, created_at, updated_at 
+		FROM users WHERE id = $1;
+	`
+
+	if err := r.db.GetContext(ctx, &model.User{}, query, id); err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+
 }
