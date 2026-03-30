@@ -34,3 +34,12 @@ type LoginPayload struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
+
+type PayloadUpdate struct {
+	Id          uuid.UUID `json:"id"`
+	Name        *string   `json:"name" validate:"required"`
+	Email       *string   `json:"email" validate:"required,email"`
+	Password    *string   `json:"password" validate:"required"`
+	Role        *string   `json:"role" validate:"required"`
+	Profile_img *string   `json:"profile_img"`
+}

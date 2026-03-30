@@ -5,17 +5,21 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 
 	"project-keuangan-keluarga/model"
+	"project-keuangan-keluarga/utils"
 )
 
 type UserRepository interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
 	GetUserByEmail(email string) (*model.User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
+	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.PayloadUpdate) error
 }
 
 type repoUser struct {
@@ -97,5 +101,77 @@ func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, 
 	}
 
 	return &user, nil
+
+}
+
+func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload model.PayloadUpdate) error {
+
+	tx_options := &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+		ReadOnly:  false,
+	}
+
+	tx, err := r.db.BeginTxx(ctx, tx_options)
+	if err != nil {
+		return errors.New("Failed to setup the transactions")
+	}
+	defer tx.Rollback()
+
+	argsID := 1
+	var args []interface{}
+	var settings []string
+
+	if payload.Name != nil {
+		settings = append(settings, fmt.Sprintf("name=$%d", argsID))
+		args = append(args, *payload.Name)
+		argsID++
+	}
+	if payload.Email != nil {
+		settings = append(settings, fmt.Sprintf("email=$%d", argsID))
+		args = append(args, *payload.Email)
+		argsID++
+	}
+	if payload.Password != nil {
+		hash_password, err := utils.HashPassword(*payload.Password)
+		if err != nil {
+			return errors.New("Failed to hash the password")
+		}
+		settings = append(settings, fmt.Sprintf("password=$%d", argsID))
+		args = append(args, hash_password)
+		argsID++
+	}
+	if payload.Role != nil {
+		settings = append(settings, fmt.Sprintf("role=$%d", argsID))
+		args = append(args, *payload.Role)
+		argsID++
+	}
+	if payload.Profile_img != nil {
+		settings = append(settings, fmt.Sprintf("profile_img=$%d", argsID))
+		args = append(args, *payload.Profile_img)
+		argsID++
+	}
+
+	settings = append(settings, fmt.Sprintf("updated_at=$%d", argsID))
+	args = append(args, time.Now().UTC())
+	argsID++
+
+	full_query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d", strings.Join(settings, ""), id)
+	args = append(args, id)
+
+	rows, err := tx.ExecContext(ctx, full_query, args...)
+	if err != nil {
+		return errors.New("Failed to exec the query!")
+	}
+
+	result, err := rows.RowsAffected()
+	if err != nil {
+		return errors.New("Failed to get the rows affected!")
+	}
+
+	if result == 0 {
+		return errors.New("No one data expected!")
+	}
+
+	return nil
 
 }

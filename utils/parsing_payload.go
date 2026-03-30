@@ -39,3 +39,11 @@ func ParsingPayloadKeuangan(payload model.PayloadKeuangan) (*model.Keuangan, err
 		UpdatedAt:         time.Now().UTC(),
 	}, nil
 }
+
+func PayloaUpdate(dest **string, val string) {
+
+	if val != "" {
+		*dest = &val
+	}
+
+}
