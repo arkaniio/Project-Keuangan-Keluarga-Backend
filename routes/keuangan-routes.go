@@ -29,6 +29,7 @@ func KeuanganRoutes(keuanganCtrl *controller.ControllerHandlerKeuangan) *chi.Mux
 
 	// API v1 routes
 	r.Post("/create", keuanganCtrl.CreateNewKeuangan)
+	r.Delete("/delete/{id}", keuanganCtrl.DeleteKeuangan)
 
 	return r
 }

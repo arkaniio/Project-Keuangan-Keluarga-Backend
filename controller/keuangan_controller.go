@@ -42,3 +42,20 @@ func (c *ControllerHandlerKeuangan) CreateNewKeuangan(w http.ResponseWriter, r *
 	utils.ResponseSuccess(w, http.StatusOK, "Success to create new keuangan", nil)
 
 }
+
+func (s *ControllerHandlerKeuangan) DeleteKeuangan(w http.ResponseWriter, r *http.Request) {
+
+	id, err := utils.ParamsMux("id", r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to parse the id", err.Error())
+		return
+	}
+
+	if err := s.KeuanganService.DeleteDataKeuangan(r.Context(), id); err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to delete the data", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Success to delete the data", nil)
+
+}

@@ -33,6 +33,7 @@ func UserRoutes(userCtrl *controller.ControllerHandler) *chi.Mux {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.MiddlewareAuth)
 		r.Get("/profile", userCtrl.GetProfile)
+		r.Put("/update", userCtrl.UpdateUser)
 	})
 
 	return r
