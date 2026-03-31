@@ -161,9 +161,9 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 20>>10)
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
 
-	if err := r.ParseMultipartForm(20 >> 10); err != nil {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to parsing into a multipart form data!", err.Error())
 		return
 	}
