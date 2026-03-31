@@ -117,8 +117,8 @@ func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload mod
 	}
 	defer tx.Rollback()
 
-	argsID := 1
 	var args []interface{}
+	argsID := 1
 	var settings []string
 
 	if payload.Name != nil {
@@ -155,12 +155,12 @@ func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload mod
 	args = append(args, time.Now().UTC())
 	argsID++
 
-	full_query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d", strings.Join(settings, ""), id)
+	full_query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d", strings.Join(settings, ", "), argsID)
 	args = append(args, id)
 
 	rows, err := tx.ExecContext(ctx, full_query, args...)
 	if err != nil {
-		return errors.New("Failed to exec the query!")
+		return errors.New("Failed to exec the query!" + err.Error())
 	}
 
 	result, err := rows.RowsAffected()
@@ -170,6 +170,10 @@ func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload mod
 
 	if result == 0 {
 		return errors.New("No one data expected!")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.New("Failed to update the query and commit the query!")
 	}
 
 	return nil

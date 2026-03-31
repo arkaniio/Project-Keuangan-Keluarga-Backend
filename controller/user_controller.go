@@ -188,16 +188,11 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			utils.ResponseError(w, http.StatusBadRequest, "Failed to read file profile image!", err.Error())
 			return
 		}
-		profile_img.Seek(0, 0)
 
-		content_type := http.DetectContentType(buff)
-		if content_type != "jpg" && content_type != "jpeg" && content_type != "png" {
-			utils.ResponseError(w, http.StatusBadRequest, "Failed to detect the content type of the file!", "")
-			return
-		}
+		utils.DetectContentType(buff)
 
 		file_name := uuid.New().String() + header.Filename
-		path_folder := "/uploadsProfile"
+		path_folder := "uploadsProfile"
 		os.MkdirAll(path_folder, os.ModePerm)
 		path := filepath.Join(path_folder, file_name)
 		if path == "" {
