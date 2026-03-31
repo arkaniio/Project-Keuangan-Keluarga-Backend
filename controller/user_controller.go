@@ -3,10 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
 
 	"project-keuangan-keluarga/middleware"
@@ -191,24 +188,13 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 		utils.DetectContentType(buff)
 
-		file_name := uuid.New().String() + header.Filename
-		path_folder := "uploadsProfile"
-		os.MkdirAll(path_folder, os.ModePerm)
-		path := filepath.Join(path_folder, file_name)
-		if path == "" {
-			utils.ResponseError(w, http.StatusBadRequest, "Failed to get the path from os!", false)
-			return
-		}
-
-		dst, err := os.Create(path)
+		path, err := utils.MakeFileName("uploadsProfile", header, profile_img)
 		if err != nil {
-			utils.ResponseError(w, http.StatusBadRequest, "Failed to create the file!", err.Error())
+			utils.ResponseError(w, http.StatusBadRequest, "Failed to make the file name!", err.Error())
 			return
 		}
-		defer dst.Close()
-
-		if _, err := io.Copy(dst, profile_img); err != nil {
-			utils.ResponseError(w, http.StatusBadRequest, "Failed to copy the file!", err.Error())
+		if path == "" {
+			utils.ResponseError(w, http.StatusBadRequest, "Failed to make the file name!", false)
 			return
 		}
 
@@ -225,16 +211,9 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if user_data.Profile_img != "" {
-			path_old := user_data.Profile_img
-			if _, err := os.Stat(path_old); os.IsNotExist(err) {
-				utils.ResponseError(w, http.StatusBadRequest, "Failed to get the old profile image from the form data!", err.Error())
-				return
-			}
-			if err := os.Remove(path_old); err != nil {
-				utils.ResponseError(w, http.StatusBadRequest, "Failed to remove the old profile image from the form data!", err.Error())
-				return
-			}
+		if err := utils.CheckOldPath(user_data.Profile_img); err != nil {
+			utils.ResponseError(w, http.StatusBadRequest, "Failed to check the old path!", err.Error())
+			return
 		}
 
 		utils.PayloaUpdate(&paylod.Profile_img, path)
