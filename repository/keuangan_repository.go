@@ -19,6 +19,7 @@ type KeuanganRepository interface {
 	UpdateKeuangan(ctx context.Context, id uuid.UUID, payload model.PaylodUpdateKeuangan) error
 	GetAllKeuangans(ctx context.Context) ([]model.KeuanganDataWithUser, error)
 	GetKeuangansById(ctx context.Context, id uuid.UUID) ([]model.KeuanganDataWithUser, error)
+	GetKeuangansHigh(ctx context.Context) ([]model.KeuanganDataWithUser, error)
 }
 
 type repoKeuangan struct {
