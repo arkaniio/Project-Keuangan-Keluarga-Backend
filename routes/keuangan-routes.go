@@ -31,6 +31,7 @@ func KeuanganRoutes(keuanganCtrl *controller.ControllerHandlerKeuangan) *chi.Mux
 	r.Post("/create", keuanganCtrl.CreateNewKeuangan)
 	r.Put("/update/{id}", keuanganCtrl.UpdateKeuanganData)
 	r.Delete("/delete/{id}", keuanganCtrl.DeleteKeuangan)
+	r.Get("/", keuanganCtrl.GetAllKeuangansData)
 
 	return r
 }

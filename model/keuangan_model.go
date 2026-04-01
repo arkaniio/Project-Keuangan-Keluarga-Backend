@@ -41,3 +41,31 @@ type PaylodUpdateKeuangan struct {
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
+
+type StructureKeuanganWithUser struct {
+	Id                uuid.UUID `json:"id"`
+	UserId            uuid.UUID `json:"user_id"`
+	Name              string    `json:"name"`
+	Email             string    `json:"email"`
+	Profile_img       string    `json:"profile_img"`
+	JenisTransaksi    string    `json:"jenis_transaksi"`
+	JumlahPengeluaran int64     `json:"jumlah_pengeluaran"`
+	JumlahPemasukan   int64     `json:"jumlah_pemasukan"`
+	Kategori          string    `json:"kategori"`
+	Tanggal           string    `json:"tanggal"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+type KeuanganDataWithUser struct {
+	Id                uuid.UUID `json:"id"`
+	UserId            uuid.UUID `json:"user_id"`
+	User              User      `json:"user"`
+	JenisTransaksi    string    `json:"jenis_transaksi"`
+	JumlahPengeluaran int64     `json:"jumlah_pengeluaran"`
+	JumlahPemasukan   int64     `json:"jumlah_pemasukan"`
+	Kategori          string    `json:"kategori"`
+	Tanggal           string    `json:"tanggal"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}

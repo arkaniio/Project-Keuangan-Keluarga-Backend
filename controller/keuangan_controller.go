@@ -47,7 +47,7 @@ func (c *ControllerHandlerKeuangan) CreateNewKeuangan(w http.ResponseWriter, r *
 
 func (s *ControllerHandlerKeuangan) DeleteKeuangan(w http.ResponseWriter, r *http.Request) {
 
-	id, err := utils.ParamsMux("id", r)
+	id, err := utils.ParamsChiRouter("id", r)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to parse the id", err.Error())
 		return
@@ -65,18 +65,18 @@ func (s *ControllerHandlerKeuangan) DeleteKeuangan(w http.ResponseWriter, r *htt
 func (s *ControllerHandlerKeuangan) UpdateKeuanganData(w http.ResponseWriter, r *http.Request) {
 
 	var payloads model.PaylodUpdateKeuangan
-	var keuangans model.Keuangan
 	if err := utils.DecodeJson(r, &payloads); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode the json type!", err.Error())
 		return
 	}
 
-	keuangan_id, err := utils.ParamsMux("id", r)
+	keuangan_id, err := utils.ParamsChiRouter("id", r)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to setting the mux params for this method!", err.Error())
 		return
 	}
 
+	var keuangans model.Keuangan
 	utils.PayloaUpdate(&payloads.JenisTransaksi, keuangans.JenisTransaksi)
 	utils.PayloaUpdateInt64(&payloads.JumlahPengeluaran, keuangans.JumlahPengeluaran)
 	utils.PayloaUpdateInt64(&payloads.JumlahPemasukan, keuangans.JumlahPemasukan)
@@ -92,5 +92,20 @@ func (s *ControllerHandlerKeuangan) UpdateKeuanganData(w http.ResponseWriter, r 
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "Success to update the data", nil)
+
+}
+
+func (s *ControllerHandlerKeuangan) GetAllKeuangansData(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	keuangans, err := s.KeuanganService.GetAllKeuangans(ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the keuangan service!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get All Keuangans data has been successfully!", keuangans)
 
 }

@@ -4,20 +4,18 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
-func ParamsMux(id string, r *http.Request) (uuid.UUID, error) {
+func ParamsChiRouter(id string, r *http.Request) (uuid.UUID, error) {
 
-	vars_id := mux.Vars(r)
-	id_value := vars_id[id]
-
-	uuid_final, err := uuid.Parse(id_value)
+	url := chi.URLParam(r, id)
+	id_parse, err := uuid.Parse(url)
 	if err != nil {
-		return uuid.Nil, errors.New("Failed to convert data into an uuid!" + err.Error())
+		return uuid.Nil, errors.New("Failed to get the uuid parse!" + err.Error())
 	}
 
-	return uuid_final, nil
+	return id_parse, nil
 
 }

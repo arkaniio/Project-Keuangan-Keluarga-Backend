@@ -12,6 +12,7 @@ type KeuanganService interface {
 	CreateNewKeuangan(ctx context.Context, keuangan *model.Keuangan) error
 	DeleteDataKeuangan(ctx context.Context, id uuid.UUID) error
 	UpdateKeuangan(ctx context.Context, id uuid.UUID, payload model.PaylodUpdateKeuangan) error
+	GetAllKeuangans(ctx context.Context) ([]model.KeuanganDataWithUser, error)
 }
 
 type repoKeuangan struct {
@@ -32,4 +33,8 @@ func (s *repoKeuangan) DeleteDataKeuangan(ctx context.Context, id uuid.UUID) err
 
 func (s *repoKeuangan) UpdateKeuangan(ctx context.Context, id uuid.UUID, payload model.PaylodUpdateKeuangan) error {
 	return s.repo.UpdateKeuangan(ctx, id, payload)
+}
+
+func (s *repoKeuangan) GetAllKeuangans(ctx context.Context) ([]model.KeuanganDataWithUser, error) {
+	return s.repo.GetAllKeuangans(ctx)
 }
