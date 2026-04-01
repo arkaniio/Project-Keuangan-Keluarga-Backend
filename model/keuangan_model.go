@@ -29,3 +29,15 @@ type PayloadKeuangan struct {
 	CreatedAt         time.Time `json:"created_at"`
 	UpdatedAt         time.Time `json:"updated_at"`
 }
+
+type PaylodUpdateKeuangan struct {
+	Id                uuid.UUID `json:"id"`
+	UserId            uuid.UUID `json:"user_id" validate:"required"`
+	JenisTransaksi    *string   `json:"jenis_transaksi"`
+	JumlahPengeluaran *int64    `json:"jumlah_pengeluaran"`
+	JumlahPemasukan   *int64    `json:"jumlah_pemasukan"`
+	Kategori          *string   `json:"kategori"`
+	Tanggal           *string   `json:"tanggal"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}

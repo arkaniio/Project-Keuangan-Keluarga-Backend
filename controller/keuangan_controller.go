@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
+	"time"
 )
 
 type ControllerHandlerKeuangan struct {
@@ -57,5 +59,38 @@ func (s *ControllerHandlerKeuangan) DeleteKeuangan(w http.ResponseWriter, r *htt
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "Success to delete the data", nil)
+
+}
+
+func (s *ControllerHandlerKeuangan) UpdateKeuanganData(w http.ResponseWriter, r *http.Request) {
+
+	var payloads model.PaylodUpdateKeuangan
+	var keuangans model.Keuangan
+	if err := utils.DecodeJson(r, &payloads); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode the json type!", err.Error())
+		return
+	}
+
+	keuangan_id, err := utils.ParamsMux("id", r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to setting the mux params for this method!", err.Error())
+		return
+	}
+
+	utils.PayloaUpdate(&payloads.JenisTransaksi, keuangans.JenisTransaksi)
+	utils.PayloaUpdateInt64(&payloads.JumlahPengeluaran, keuangans.JumlahPengeluaran)
+	utils.PayloaUpdateInt64(&payloads.JumlahPemasukan, keuangans.JumlahPemasukan)
+	utils.PayloaUpdate(&payloads.Kategori, keuangans.Kategori)
+	utils.PayloaUpdate(&payloads.Tanggal, keuangans.Tanggal)
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	if err := s.KeuanganService.UpdateKeuangan(ctx, keuangan_id, payloads); err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to update the data", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Success to update the data", nil)
 
 }

@@ -4,7 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"project-keuangan-keluarga/model"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -13,6 +16,7 @@ import (
 type KeuanganRepository interface {
 	CreateNewKeuangan(ctx context.Context, keuangan *model.Keuangan) error
 	DeleteDataKeuangan(ctx context.Context, id uuid.UUID) error
+	UpdateKeuangan(ctx context.Context, id uuid.UUID, payload model.PaylodUpdateKeuangan) error
 }
 
 type repoKeuangan struct {
@@ -88,6 +92,78 @@ func (r *repoKeuangan) DeleteDataKeuangan(ctx context.Context, Id uuid.UUID) err
 
 	if err := tx.Commit(); err != nil {
 		return errors.New("Failed to commit the transaction")
+	}
+
+	return nil
+
+}
+
+func (r *repoKeuangan) UpdateKeuangan(ctx context.Context, id uuid.UUID, payload model.PaylodUpdateKeuangan) error {
+
+	options := &sql.TxOptions{
+		ReadOnly:  false,
+		Isolation: sql.LevelSerializable,
+	}
+
+	tx, err := r.db.BeginTxx(ctx, options)
+	if err != nil {
+		return errors.New("Failed to setup the transactions")
+	}
+	defer tx.Rollback()
+
+	var args []interface{}
+	argsID := 1
+	var settings []string
+
+	if payload.JenisTransaksi != nil {
+		settings = append(settings, fmt.Sprintf("jenis_transaksi=$%d", argsID))
+		args = append(args, *payload.JenisTransaksi)
+		argsID++
+	}
+	if payload.JumlahPengeluaran != nil {
+		settings = append(settings, fmt.Sprintf("jumlah_pengeluaran=$%d", argsID))
+		args = append(args, *payload.JumlahPengeluaran)
+		argsID++
+	}
+	if payload.JumlahPemasukan != nil {
+		settings = append(settings, fmt.Sprintf("jumlah_pemasukan=$%d", argsID))
+		args = append(args, *payload.JumlahPemasukan)
+		argsID++
+	}
+	if payload.Kategori != nil {
+		settings = append(settings, fmt.Sprintf("kategori=$%d", argsID))
+		args = append(args, *payload.Kategori)
+		argsID++
+	}
+	if payload.Tanggal != nil {
+		settings = append(settings, fmt.Sprintf("tanggal=$%d", argsID))
+		args = append(args, *payload.Tanggal)
+		argsID++
+	}
+
+	settings = append(settings, fmt.Sprintf("updated_at=$%d", argsID))
+	args = append(args, time.Now().UTC())
+	argsID++
+
+	full_query := fmt.Sprintf("UPDATE keuangans SET %s WHERE id = $%d", strings.Join(settings, ", "), argsID)
+	args = append(args, id)
+
+	rows, err := tx.ExecContext(ctx, full_query, args...)
+	if err != nil {
+		return errors.New("Failed to exec the query!" + err.Error())
+	}
+
+	result, err := rows.RowsAffected()
+	if err != nil {
+		return errors.New("Failed to get the rows affected!")
+	}
+
+	if result == 0 {
+		return errors.New("No one data expected!")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.New("Failed to update the query and commit the query!")
 	}
 
 	return nil

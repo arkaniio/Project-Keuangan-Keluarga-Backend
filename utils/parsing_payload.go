@@ -47,3 +47,11 @@ func PayloaUpdate(dest **string, val string) {
 	}
 
 }
+
+func PayloaUpdateInt64(dest **int64, val int64) {
+
+	if val != 0 {
+		*dest = &val
+	}
+
+}

@@ -50,7 +50,6 @@ func MakeFileName(value string, form *multipart.FileHeader, file multipart.File)
 	if err != nil {
 		return "", err
 	}
-	dst.Close()
 
 	if _, err := io.Copy(dst, file); err != nil {
 		return "", err
