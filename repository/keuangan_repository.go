@@ -272,3 +272,54 @@ func (r *repoKeuangan) GetKeuangansById(ctx context.Context, id uuid.UUID) ([]mo
 	return keuangan, nil
 
 }
+
+func (r *repoKeuangan) GetHighKeuangan(ctx context.Context) ([]model.KeuanganDataWithUser, error) {
+
+	query := `
+		SELECT k.id, k.user_id, k.jenis_transaksi, k.jumlah_pengeluaran, k.jumlah_pemasukan, k.kategori, k.tanggal, k.created_at, k.updated_at
+		FROM keuangans k
+		JOIN users u ON k.user_id = u.id
+		GROUP BY k.jumlah_pengeluaran AND k.jumlah_pemasukan ASC;
+	`
+
+	scan_query, err := r.db.QueryxContext(ctx, query)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("Failed to get the rows from the result!")
+		}
+		return nil, errors.New("Failed to detect the result of the query!")
+	}
+	defer scan_query.Close()
+
+	var keuangan []model.KeuanganDataWithUser
+	for scan_query.Next() {
+		var keuangan_data model.StructureKeuanganWithUser
+		if err := scan_query.StructScan(keuangan_data); err != nil {
+			return nil, errors.New("Failed to get the struct of keuangan and user data!" + err.Error())
+		}
+
+		keuangans_data := model.KeuanganDataWithUser{
+			Id:     keuangan_data.Id,
+			UserId: keuangan_data.UserId,
+			User: model.User{
+				Id:          keuangan_data.UserId,
+				Name:        keuangan_data.Name,
+				Email:       keuangan_data.Email,
+				Profile_img: keuangan_data.Profile_img,
+			},
+			JenisTransaksi:    keuangan_data.JenisTransaksi,
+			JumlahPengeluaran: keuangan_data.JumlahPengeluaran,
+			JumlahPemasukan:   keuangan_data.JumlahPemasukan,
+			Kategori:          keuangan_data.Kategori,
+			Tanggal:           keuangan_data.Tanggal,
+			CreatedAt:         keuangan_data.CreatedAt,
+			UpdatedAt:         keuangan_data.UpdatedAt,
+		}
+
+		keuangan = append(keuangan, keuangans_data)
+
+	}
+
+	return keuangan, nil
+
+}
