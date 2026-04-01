@@ -109,3 +109,24 @@ func (s *ControllerHandlerKeuangan) GetAllKeuangansData(w http.ResponseWriter, r
 	utils.ResponseSuccess(w, http.StatusOK, "Get All Keuangans data has been successfully!", keuangans)
 
 }
+
+func (s *ControllerHandlerKeuangan) GetKeuangansById(w http.ResponseWriter, r *http.Request) {
+
+	id, err := utils.ParamsChiRouter("id", r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to parse the id", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	keuangans, err := s.KeuanganService.GetKeuangansById(ctx, id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the keuangan service!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get All Keuangans data has been successfully!", keuangans)
+
+}
