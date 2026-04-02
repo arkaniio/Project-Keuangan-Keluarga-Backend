@@ -33,6 +33,7 @@ func KeuanganRoutes(keuanganCtrl *controller.ControllerHandlerKeuangan) *chi.Mux
 	r.Delete("/delete/{id}", keuanganCtrl.DeleteKeuangan)
 	r.Get("/", keuanganCtrl.GetAllKeuangansData)
 	r.Get("/{id}", keuanganCtrl.GetKeuangansById)
+	r.Get("/high", keuanganCtrl.GetKeuangansHighData)
 
 	return r
 }
