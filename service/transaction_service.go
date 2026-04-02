@@ -4,13 +4,13 @@ import (
 	"project-keuangan-keluarga/repository"
 )
 
-type KeuanganService interface {
+type TransactionService interface {
 }
 
-type repoKeuangan struct {
-	repo repository.KeuanganRepository
+type repoTransaction struct {
+	repo repository.TransactionRepository
 }
 
-func NewKeuanganService(repo repository.KeuanganRepository) KeuanganService {
-	return &repoKeuangan{repo: repo}
+func NewTransactionService(repo repository.TransactionRepository) TransactionService {
+	return &repoTransaction{repo: repo}
 }

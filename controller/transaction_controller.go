@@ -4,10 +4,10 @@ import (
 	"project-keuangan-keluarga/service"
 )
 
-type ControllerHandlerKeuangan struct {
-	KeuanganService service.KeuanganService
+type ControllerHandlerTransaction struct {
+	TransactionService service.TransactionService
 }
 
-func NewControllerHandlerKeuangan(keuanganService service.KeuanganService) *ControllerHandlerKeuangan {
-	return &ControllerHandlerKeuangan{KeuanganService: keuanganService}
+func NewControllerHandlerTransaction(transactionService service.TransactionService) *ControllerHandlerTransaction {
+	return &ControllerHandlerTransaction{TransactionService: transactionService}
 }

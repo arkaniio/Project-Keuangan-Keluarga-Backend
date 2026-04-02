@@ -4,13 +4,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type KeuanganRepository interface {
+type TransactionRepository interface {
 }
 
-type repoKeuangan struct {
+type repoTransaction struct {
 	db *sqlx.DB
 }
 
-func NewKeuanganRepository(db *sqlx.DB) KeuanganRepository {
-	return &repoKeuangan{db: db}
+func NewTransactionRepository(db *sqlx.DB) TransactionRepository {
+	return &repoTransaction{db: db}
 }
