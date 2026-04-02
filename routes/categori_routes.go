@@ -28,6 +28,7 @@ func CategoryRoutes(categoryCtrl *controller.ControllerHandlerCategory) *chi.Mux
 	})
 
 	// API v1 routes
+	r.Post("/", categoryCtrl.CreateNewCategory_Bp)
 
 	return r
 }

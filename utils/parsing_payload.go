@@ -41,6 +41,16 @@ func ParsingPayloadTransaction(payload model.PayloadTransaction) (*model.Transac
 	}, nil
 }
 
+func ParsingPayloadCategory(payload model.PayloadCategory) (*model.Category, error) {
+
+	return &model.Category{
+		Id:     uuid.New(),
+		UserId: payload.UserId,
+		Name:   payload.Name,
+		Type:   payload.Type,
+	}, nil
+}
+
 func PayloaUpdate(dest **string, val string) {
 
 	if val != "" {
