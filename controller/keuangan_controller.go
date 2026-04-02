@@ -130,3 +130,18 @@ func (s *ControllerHandlerKeuangan) GetKeuangansById(w http.ResponseWriter, r *h
 	utils.ResponseSuccess(w, http.StatusOK, "Get All Keuangans data has been successfully!", keuangans)
 
 }
+
+func (s *ControllerHandlerKeuangan) GetKeuangansHighData(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	keuangans_data, err := s.KeuanganService.GetHighKeuangan(ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the keuangan data!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the keuangan data!", keuangans_data)
+
+}
