@@ -10,6 +10,7 @@ import (
 )
 
 type TransactionRepository interface {
+	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
 }
 
 type repoTransaction struct {
@@ -20,7 +21,7 @@ func NewTransactionRepository(db *sqlx.DB) TransactionRepository {
 	return &repoTransaction{db: db}
 }
 
-func (r *repoTransaction) CreateNewCategory(ctx context.Context, transaction *model.Transaction) error {
+func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction *model.Transaction) error {
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
