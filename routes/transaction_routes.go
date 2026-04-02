@@ -11,7 +11,7 @@ import (
 	"project-keuangan-keluarga/middleware"
 )
 
-func KeuanganRoutes(keuanganCtrl *controller.ControllerHandlerTransaction) *chi.Mux {
+func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global middleware
@@ -28,6 +28,7 @@ func KeuanganRoutes(keuanganCtrl *controller.ControllerHandlerTransaction) *chi.
 	})
 
 	// API v1 routes
+	r.Patch("/", transactionsCtrl.CreateNewTransactions_Bp)
 
 	return r
 }

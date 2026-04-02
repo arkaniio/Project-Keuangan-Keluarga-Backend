@@ -19,11 +19,11 @@ type Transaction struct {
 }
 
 type PayloadTransaction struct {
-	Id          uuid.UUID `json:"id"`
-	UserId      uuid.UUID `json:"user_id"`
-	Type        string    `json:"type"`
-	Amount      int64     `json:"amount"`
-	CategoryId  uuid.UUID `json:"category_id"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
+	Id          uuid.UUID `json:"id" validate:"required"`
+	UserId      uuid.UUID `json:"user_id" validate:"required"`
+	Type        string    `json:"type" validate:"required"`
+	Amount      int64     `json:"amount" validate:"required"`
+	CategoryId  uuid.UUID `json:"category_id" validate:"required"`
+	Description string    `json:"description" validate:"required"`
+	Date        time.Time `json:"date" validate:"required"`
 }

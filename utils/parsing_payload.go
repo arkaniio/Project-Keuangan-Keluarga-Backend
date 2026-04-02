@@ -26,6 +26,21 @@ func ParsingPayloadUser(payload model.Payload) (*model.User, error) {
 	}, nil
 }
 
+func ParsingPayloadTransaction(payload model.PayloadTransaction) (*model.Transaction, error) {
+
+	return &model.Transaction{
+		Id:          uuid.New(),
+		UserId:      payload.UserId,
+		Type:        payload.Type,
+		Amount:      payload.Amount,
+		CategoryId:  payload.CategoryId,
+		Description: payload.Description,
+		Date:        payload.Date,
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
+	}, nil
+}
+
 func PayloaUpdate(dest **string, val string) {
 
 	if val != "" {
