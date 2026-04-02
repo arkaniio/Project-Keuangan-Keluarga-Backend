@@ -20,8 +20,7 @@ import (
 )
 
 func main() {
-	// ── 1. Database ──────────────────────────────────────────────
-
+	// ── 1. Database ─────────────────────────────────────────────
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("[MAIN] Failed to load .env file: %v", err)
 	}
@@ -50,7 +49,7 @@ func main() {
 	router_keuangan := routes.KeuanganRoutes(keuanganCtrl)
 
 	subRoiter.Mount("/api/v1/users", router)
-	subRoiter.Mount("/api/v1/keuangans", router_keuangan)
+	subRoiter.Mount("/api/v1/transactions", router_keuangan)
 
 	// ── 4. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{
