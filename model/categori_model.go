@@ -2,7 +2,7 @@ package model
 
 import "github.com/google/uuid"
 
-type Catregory struct {
+type Category struct {
 	Id     uuid.UUID `db:"id"`
 	UserId uuid.UUID `db:"user_id"`
 	Name   string    `db:"name"`

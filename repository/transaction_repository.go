@@ -33,7 +33,7 @@ func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);
 	`
 
-	rows, err := db_tx.ExecContext(ctx, query)
+	rows, err := db_tx.ExecContext(ctx, query, transaction.Id, transaction.UserId, transaction.Type, transaction.Amount, transaction.CategoryId, transaction.Description, transaction.Date, transaction.CreatedAt, transaction.UpdatedAt)
 	if err != nil {
 		return errors.New("Failed to execute the db!")
 	}

@@ -1,8 +1,16 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
+	"errors"
+	"project-keuangan-keluarga/model"
+	"project-keuangan-keluarga/utils"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type CategoryRepository interface {
+	CreateNewCategory(ctx context.Context, categories *model.Category) error
 }
 
 type repoCategory struct {
@@ -11,4 +19,38 @@ type repoCategory struct {
 
 func NewCategoryRepository(db *sqlx.DB) CategoryRepository {
 	return &repoCategory{db: db}
+}
+
+func (r *repoCategory) CreateNewCategory(ctx context.Context, categories *model.Category) error {
+
+	db_tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to settings and add the transactions for this method!")
+	}
+
+	query := `
+		INSERT INTO categories(id, user_id, name, type) 
+		VALUES($1, $2, $3, $4);
+	`
+
+	rows, err := db_tx.ExecContext(ctx, query, categories.Id, categories.UserId, categories.Name, categories.Type)
+	if err != nil {
+		return errors.New("Failed to execute the db!")
+	}
+
+	last_infected, err := rows.RowsAffected()
+	if err != nil {
+		return errors.New("Failed to get the rows affected!")
+	}
+
+	if last_infected == 0 {
+		return errors.New("Failed to insert the data!")
+	}
+
+	if err := db_tx.Commit(); err != nil {
+		return errors.New("Failed to commit the db!")
+	}
+
+	return nil
+
 }
