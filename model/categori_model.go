@@ -10,7 +10,7 @@ type Category struct {
 }
 
 type PayloadCategory struct {
-	Id     uuid.UUID `json:"id" validate:"required"`
+	Id     uuid.UUID `json:"id"`
 	UserId uuid.UUID `json:"user_id" validate:"required"`
 	Name   string    `json:"name" validate:"required"`
 	Type   string    `json:"type" validate:"required"`

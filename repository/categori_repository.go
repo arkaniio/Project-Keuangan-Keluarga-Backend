@@ -27,6 +27,7 @@ func (r *repoCategory) CreateNewCategory(ctx context.Context, categories *model.
 	if err != nil {
 		return errors.New("Failed to settings and add the transactions for this method!")
 	}
+	defer db_tx.Rollback()
 
 	query := `
 		INSERT INTO categories(id, user_id, name, type) 
@@ -35,7 +36,7 @@ func (r *repoCategory) CreateNewCategory(ctx context.Context, categories *model.
 
 	rows, err := db_tx.ExecContext(ctx, query, categories.Id, categories.UserId, categories.Name, categories.Type)
 	if err != nil {
-		return errors.New("Failed to execute the db!")
+		return errors.New("Failed to execute the db!" + err.Error())
 	}
 
 	last_infected, err := rows.RowsAffected()

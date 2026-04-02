@@ -19,7 +19,6 @@ func AddTransaction(db *sqlx.DB, ctx context.Context) (*sqlx.Tx, error) {
 	if err != nil {
 		return nil, errors.New("Failed to settings the transactions")
 	}
-	defer tx.Rollback()
 
 	return tx, nil
 
