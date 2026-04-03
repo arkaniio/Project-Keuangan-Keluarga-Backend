@@ -35,7 +35,7 @@ type LoginPayload struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type PayloadUpdate struct {
+type UpdatePayloadUser struct {
 	Id          uuid.UUID `json:"id"`
 	Name        *string   `json:"name" validate:"required"`
 	Email       *string   `json:"email" validate:"required,email"`

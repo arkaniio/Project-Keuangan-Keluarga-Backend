@@ -63,14 +63,14 @@ func (r *repoCategory) UpdateCategory(ctx context.Context, id uuid.UUID, payload
 	if err != nil {
 		return errors.New("Failed to add and settings the transactions")
 	}
-	db_tx.Rollback()
+	defer db_tx.Rollback()
 
-	full_query, err := utils.UpdateToolsCategory(payload, id)
+	full_query, args, err := utils.UpdateToolsCategory(payload, id)
 	if err != nil {
 		return errors.New("Failed to get the full query for categories!")
 	}
 
-	if _, err := db_tx.ExecContext(ctx, full_query); err != nil {
+	if _, err := db_tx.ExecContext(ctx, full_query, args...); err != nil {
 		return errors.New("Failed to execute the db!")
 	}
 

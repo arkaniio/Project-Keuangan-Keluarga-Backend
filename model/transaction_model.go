@@ -27,3 +27,11 @@ type PayloadTransaction struct {
 	Description string    `json:"description" validate:"required"`
 	Date        time.Time `json:"date" validate:"required"`
 }
+
+type UpdatePayloadTransaction struct {
+	Type        *string    `json:"type"`
+	Amount      *int64     `json:"amount"`
+	CategoryId  *uuid.UUID `json:"category_id"`
+	Description *string    `json:"description"`
+	Date        *time.Time `json:"date"`
+}

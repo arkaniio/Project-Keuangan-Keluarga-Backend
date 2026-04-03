@@ -13,7 +13,7 @@ type UserService interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
 	GetUserByEmail(email string) (*model.User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
-	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.PayloadUpdate) error
+	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.UpdatePayloadUser) error
 }
 
 type repoUser struct {
@@ -36,6 +36,6 @@ func (s *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, 
 	return s.repo.GetUserById(ctx, id)
 }
 
-func (s *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, user model.PayloadUpdate) error {
-	return s.repo.UpdateDataUser(id, ctx, user)
+func (s *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload model.UpdatePayloadUser) error {
+	return s.repo.UpdateDataUser(id, ctx, payload)
 }

@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -19,7 +17,7 @@ type UserRepository interface {
 	CreateNewUser(ctx context.Context, user *model.User) error
 	GetUserByEmail(email string) (*model.User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
-	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.PayloadUpdate) error
+	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.UpdatePayloadUser) error
 }
 
 type repoUser struct {
@@ -33,34 +31,19 @@ func NewExampleRepository(db *sqlx.DB) UserRepository {
 // func to create a new user
 func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 
-	tx_options := &sql.TxOptions{
-		Isolation: sql.LevelSerializable,
-		ReadOnly:  false,
-	}
-
-	tx, err := r.db.BeginTxx(ctx, tx_options)
+	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
-		return errors.New("Failed to setup the transactions")
+		return errors.New("Failed to adding the transaction!")
 	}
-	defer tx.Rollback()
+	db_tx.Rollback()
 
 	query := `
 		INSERT INTO users(id, name, email, password, role, profile_img, created_at, updated_at)
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8);
 	`
 
-	rows, err := tx.ExecContext(ctx, query, user.Id, user.Name, user.Email, user.Password, user.Role, user.Profile_img, user.CreatedAt, user.UpdatedAt)
-	if err != nil {
+	if _, err := db_tx.ExecContext(ctx, query, user.Id, user.Name, user.Email, user.Password, user.Role, user.Profile_img, user.CreatedAt, user.UpdatedAt); err != nil {
 		return errors.New("Failed to exec the context" + err.Error())
-	}
-
-	rows_dected, _ := rows.RowsAffected()
-	if rows_dected == 0 {
-		return errors.New("Failed to detect the rows affected")
-	}
-
-	if err := tx.Commit(); err != nil {
-		return errors.New("Failed to commit the transaction")
 	}
 
 	return nil
@@ -104,75 +87,24 @@ func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, 
 
 }
 
-func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload model.PayloadUpdate) error {
+func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload model.UpdatePayloadUser) error {
 
-	tx_options := &sql.TxOptions{
-		Isolation: sql.LevelSerializable,
-		ReadOnly:  false,
-	}
-
-	tx, err := r.db.BeginTxx(ctx, tx_options)
+	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
-		return errors.New("Failed to setup the transactions")
+		return errors.New("Failed to get and settings the transactions!")
 	}
-	defer tx.Rollback()
+	db_tx.Rollback()
 
-	var args []interface{}
-	argsID := 1
-	var settings []string
-
-	if payload.Name != nil {
-		settings = append(settings, fmt.Sprintf("name=$%d", argsID))
-		args = append(args, *payload.Name)
-		argsID++
-	}
-	if payload.Email != nil {
-		settings = append(settings, fmt.Sprintf("email=$%d", argsID))
-		args = append(args, *payload.Email)
-		argsID++
-	}
-	if payload.Password != nil {
-		hash_password, err := utils.HashPassword(*payload.Password)
-		if err != nil {
-			return errors.New("Failed to hash the password")
-		}
-		settings = append(settings, fmt.Sprintf("password=$%d", argsID))
-		args = append(args, hash_password)
-		argsID++
-	}
-	if payload.Role != nil {
-		settings = append(settings, fmt.Sprintf("role=$%d", argsID))
-		args = append(args, *payload.Role)
-		argsID++
-	}
-	if payload.Profile_img != nil {
-		settings = append(settings, fmt.Sprintf("profile_img=$%d", argsID))
-		args = append(args, *payload.Profile_img)
-		argsID++
-	}
-
-	settings = append(settings, fmt.Sprintf("updated_at=$%d", argsID))
-	args = append(args, time.Now().UTC())
-	argsID++
-
-	full_query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d", strings.Join(settings, ", "), argsID)
-	args = append(args, id)
-
-	rows, err := tx.ExecContext(ctx, full_query, args...)
+	full_query, args, err := utils.UpdateToolsUser(payload, id)
 	if err != nil {
+		return errors.New("Failed to settins the update tools for a user!")
+	}
+
+	if _, err := db_tx.ExecContext(ctx, full_query, args...); err != nil {
 		return errors.New("Failed to exec the query!" + err.Error())
 	}
 
-	result, err := rows.RowsAffected()
-	if err != nil {
-		return errors.New("Failed to get the rows affected!")
-	}
-
-	if result == 0 {
-		return errors.New("No one data expected!")
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err := db_tx.Commit(); err != nil {
 		return errors.New("Failed to update the query and commit the query!")
 	}
 

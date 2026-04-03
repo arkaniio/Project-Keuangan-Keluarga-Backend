@@ -9,29 +9,119 @@ import (
 	"github.com/google/uuid"
 )
 
-func UpdateToolsCategory(payload model.UpdatePayloadCategory, id uuid.UUID) (string, error) {
+// fieldMapping defines a column name and its pointer value for dynamic update queries.
+type fieldMapping struct {
+	Column string
+	Value  interface{} // the dereferenced value (nil if pointer is nil)
+	IsSet  bool        // true if the pointer field is not nil
+}
 
+// buildUpdateQuery is a generic helper that builds a dynamic UPDATE query
+// from a slice of field mappings, a table name, and the row ID.
+func buildUpdateQuery(table string, fields []fieldMapping, id uuid.UUID) (string, []interface{}, error) {
 	var settings []string
 	var args []interface{}
-	argsId := 1
+	argIdx := 1
 
-	if payload.Name != nil {
-		settings = append(settings, fmt.Sprintf("name=$%d", argsId))
-		args = append(args, *payload.Name)
-		argsId++
-	}
-	if payload.Type != nil {
-		if *payload.Type != "expense" && *payload.Type != "income" {
-			return "", errors.New("Failed to validate the type!")
+	for _, f := range fields {
+		if f.IsSet {
+			settings = append(settings, fmt.Sprintf("%s=$%d", f.Column, argIdx))
+			args = append(args, f.Value)
+			argIdx++
 		}
-		settings = append(settings, fmt.Sprintf("type=$%d", argsId))
-		args = append(args, *payload.Type)
-		argsId++
 	}
 
-	query := fmt.Sprintf("UPDATE categories SET %s WHERE id = $%d", strings.Join(settings, ", "), argsId)
+	if len(settings) == 0 {
+		return "", nil, errors.New("no fields to update")
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d", table, strings.Join(settings, ", "), argIdx)
 	args = append(args, id)
 
-	return query, nil
+	return query, args, nil
+}
 
+func UpdateToolsCategory(payload model.UpdatePayloadCategory, id uuid.UUID) (string, []interface{}, error) {
+	// Validate type if provided
+	if payload.Type != nil {
+		if *payload.Type != "expense" && *payload.Type != "income" {
+			return "", nil, errors.New("Failed to validate the type!")
+		}
+	}
+
+	fields := []fieldMapping{
+		{
+			Column: "name", Value: valOrNil(payload.Name), IsSet: payload.Name != nil},
+		{
+			Column: "type", Value: valOrNil(payload.Type), IsSet: payload.Type != nil},
+	}
+
+	return buildUpdateQuery("categories", fields, id)
+}
+
+func UpdateToolsTransactions(payload model.UpdatePayloadTransaction, id uuid.UUID) (string, []interface{}, error) {
+	// Validate type if provided
+	if payload.Type != nil {
+		if *payload.Type != "expense" && *payload.Type != "income" {
+			return "", nil, errors.New("Failed to validate the type payload! invalid payload!")
+		}
+	}
+
+	fields := []fieldMapping{
+		{
+			Column: "type", Value: valOrNil(payload.Type), IsSet: payload.Type != nil},
+		{
+			Column: "amount", Value: valOrNil(payload.Amount), IsSet: payload.Amount != nil},
+		{
+			Column: "category_id", Value: valOrNil(payload.CategoryId), IsSet: payload.CategoryId != nil},
+		{
+			Column: "description", Value: valOrNil(payload.Description), IsSet: payload.Description != nil},
+		{
+			Column: "date", Value: valOrNil(payload.Date), IsSet: payload.Date != nil},
+	}
+
+	return buildUpdateQuery("transactions", fields, id)
+}
+
+func UpdateToolsUser(payload model.UpdatePayloadUser, id uuid.UUID) (string, []interface{}, error) {
+
+	if payload.Email != nil {
+		if err := IsValidEmail(*payload.Email); err != nil {
+			return "", nil, errors.New("Failed to get and validate the email!")
+		}
+	}
+
+	if payload.Password != nil {
+		hash_password, err := HashPassword(*payload.Password)
+		if err != nil {
+			return "", nil, errors.New("Failed to hash the password!")
+		}
+		payload.Password = &hash_password
+	}
+
+	field := []fieldMapping{
+		{
+			Column: "name", Value: valOrNil(payload.Name), IsSet: payload.Name != nil,
+		},
+		{
+			Column: "email", Value: valOrNil(payload.Email), IsSet: payload.Email != nil,
+		},
+		{
+			Column: "password", Value: valOrNil(payload.Password), IsSet: payload.Password != nil,
+		},
+		{
+			Column: "profile_img", Value: valOrNil(payload.Profile_img), IsSet: payload.Profile_img != nil,
+		},
+	}
+
+	return buildUpdateQuery("users", field, id)
+
+}
+
+// valOrNil safely dereferences any pointer, returning the value or nil.
+func valOrNil[T any](p *T) interface{} {
+	if p == nil {
+		return nil
+	}
+	return *p
 }
