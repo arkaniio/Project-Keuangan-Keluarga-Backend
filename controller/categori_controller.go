@@ -53,3 +53,28 @@ func (c *ControllerHandlerCategory) CreateNewCategory_Bp(w http.ResponseWriter, 
 	utils.ResponseSuccess(w, http.StatusOK, "Success to create the new category", nil)
 
 }
+
+func (c *ControllerHandlerCategory) UpdateCategory_Bp(w http.ResponseWriter, r *http.Request) {
+
+	var payload model.UpdatePayloadCategory
+	if err := utils.DecodeJson(r, &payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode the json!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	if err := c.CategoryService.UpdateCategory(ctx, userId, payload); err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to update the category!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully updated the category!", nil)
+
+}

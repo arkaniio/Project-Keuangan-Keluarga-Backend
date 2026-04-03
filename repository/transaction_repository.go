@@ -12,6 +12,7 @@ import (
 
 type TransactionRepository interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
+	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 }
 
 type repoTransaction struct {

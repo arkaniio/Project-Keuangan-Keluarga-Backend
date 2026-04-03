@@ -4,10 +4,13 @@ import (
 	"context"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
+
+	"github.com/google/uuid"
 )
 
 type TransactionService interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
+	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 }
 
 type repoTransaction struct {
@@ -20,4 +23,8 @@ func NewTransactionService(repo repository.TransactionRepository) TransactionSer
 
 func (s *repoTransaction) CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error {
 	return s.repo.CreateNewTransactions(ctx, transactions)
+}
+
+func (s *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error {
+	return s.repo.UpdateTransaction(ctx, id, payload)
 }

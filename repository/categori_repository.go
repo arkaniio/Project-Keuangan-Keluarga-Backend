@@ -12,6 +12,7 @@ import (
 
 type CategoryRepository interface {
 	CreateNewCategory(ctx context.Context, categories *model.Category) error
+	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 }
 
 type repoCategory struct {

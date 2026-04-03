@@ -53,3 +53,28 @@ func (c *ControllerHandlerTransaction) CreateNewTransactions_Bp(w http.ResponseW
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully created the transactions!", nil)
 
 }
+
+func (c *ControllerHandlerTransaction) UpdateTransactions_Bp(w http.ResponseWriter, r *http.Request) {
+
+	var payload model.UpdatePayloadTransaction
+	if err := utils.DecodeJson(r, &payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode the json!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	if err := c.TransactionService.UpdateTransaction(ctx, userId, payload); err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to update the transaction!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully updated the transaction!", nil)
+
+}
