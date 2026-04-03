@@ -11,6 +11,7 @@ import (
 type TransactionService interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
+	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 }
 
 type repoTransaction struct {
@@ -27,4 +28,8 @@ func (s *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 
 func (s *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error {
 	return s.repo.UpdateTransaction(ctx, id, payload)
+}
+
+func (s *repoTransaction) DeleteTransaction(ctx context.Context, id uuid.UUID) error {
+	return s.repo.DeleteTransaction(ctx, id)
 }

@@ -13,6 +13,7 @@ import (
 type CategoryRepository interface {
 	CreateNewCategory(ctx context.Context, categories *model.Category) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
+	DeleteCategory(ctx context.Context, id uuid.UUID) error
 }
 
 type repoCategory struct {
@@ -72,6 +73,30 @@ func (r *repoCategory) UpdateCategory(ctx context.Context, id uuid.UUID, payload
 	}
 
 	if _, err := db_tx.ExecContext(ctx, full_query, args...); err != nil {
+		return errors.New("Failed to execute the db!")
+	}
+
+	if err := db_tx.Commit(); err != nil {
+		return errors.New("Failed to commit the db!")
+	}
+
+	return nil
+
+}
+
+func (r *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID) error {
+
+	db_tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to add and settings the transactions")
+	}
+	defer db_tx.Rollback()
+
+	query := `
+		DELETE FROM categories WHERE id = $1;
+	`
+
+	if _, err := db_tx.ExecContext(ctx, query, id); err != nil {
 		return errors.New("Failed to execute the db!")
 	}
 

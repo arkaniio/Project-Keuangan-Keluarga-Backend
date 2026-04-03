@@ -11,6 +11,7 @@ import (
 type CategoryService interface {
 	CreateNewCategory(ctx context.Context, categories *model.Category) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
+	DeleteCategory(ctx context.Context, id uuid.UUID) error
 }
 
 type repoCategory struct {
@@ -27,4 +28,8 @@ func (s *repoCategory) CreateNewCategory(ctx context.Context, categories *model.
 
 func (s *repoCategory) UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error {
 	return s.repo.UpdateCategory(ctx, id, payload)
+}
+
+func (s *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID) error {
+	return s.repo.DeleteCategory(ctx, id)
 }

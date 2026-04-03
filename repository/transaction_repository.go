@@ -13,6 +13,7 @@ import (
 type TransactionRepository interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
+	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 }
 
 type repoTransaction struct {
@@ -71,6 +72,30 @@ func (r *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, p
 	}
 
 	if _, err := db_tx.ExecContext(ctx, full_query, args...); err != nil {
+		return errors.New("Failed to execute the query with context!")
+	}
+
+	if err := db_tx.Commit(); err != nil {
+		return errors.New("Failed to commit the db!")
+	}
+
+	return nil
+
+}
+
+func (r *repoTransaction) DeleteTransaction(ctx context.Context, id uuid.UUID) error {
+
+	db_tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to get and settings the transactions!")
+	}
+	db_tx.Rollback()
+
+	query := `
+		DELETE FROM transactions WHERE id = $1;
+	`
+
+	if _, err := db_tx.ExecContext(ctx, query, id); err != nil {
 		return errors.New("Failed to execute the query with context!")
 	}
 

@@ -78,3 +78,22 @@ func (c *ControllerHandlerTransaction) UpdateTransactions_Bp(w http.ResponseWrit
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully updated the transaction!", nil)
 
 }
+
+func (c *ControllerHandlerTransaction) DeleteTransaction_Bp(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	if err := c.TransactionService.DeleteTransaction(ctx, userId); err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to delete the transaction!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully deleted the transaction!", nil)
+
+}

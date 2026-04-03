@@ -78,3 +78,22 @@ func (c *ControllerHandlerCategory) UpdateCategory_Bp(w http.ResponseWriter, r *
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully updated the category!", nil)
 
 }
+
+func (c *ControllerHandlerCategory) DeleteCategory_Bp(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	if err := c.CategoryService.DeleteCategory(ctx, userId); err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to delete the category!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully deleted the category!", nil)
+
+}
