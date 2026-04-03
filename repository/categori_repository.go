@@ -6,6 +6,7 @@ import (
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/utils"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -46,6 +47,31 @@ func (r *repoCategory) CreateNewCategory(ctx context.Context, categories *model.
 
 	if last_infected == 0 {
 		return errors.New("Failed to insert the data!")
+	}
+
+	if err := db_tx.Commit(); err != nil {
+		return errors.New("Failed to commit the db!")
+	}
+
+	return nil
+
+}
+
+func (r *repoCategory) UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error {
+
+	db_tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to add and settings the transactions")
+	}
+	db_tx.Rollback()
+
+	full_query, err := utils.UpdateToolsCategory(payload, id)
+	if err != nil {
+		return errors.New("Failed to get the full query for categories!")
+	}
+
+	if _, err := db_tx.ExecContext(ctx, full_query); err != nil {
+		return errors.New("Failed to execute the db!")
 	}
 
 	if err := db_tx.Commit(); err != nil {

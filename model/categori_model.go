@@ -15,3 +15,8 @@ type PayloadCategory struct {
 	Name   string    `json:"name" validate:"required"`
 	Type   string    `json:"type" validate:"required"`
 }
+
+type UpdatePayloadCategory struct {
+	Name *string `json:"name"`
+	Type *string `json:"type"`
+}
