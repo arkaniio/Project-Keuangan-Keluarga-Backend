@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type FieldsFile struct {
+	Name        string
+	Email       string
+	Password    string
+	Role        string
+	Profile_img string
+}
+
 func DetectContentType(buff []byte) string {
 
 	content_type := http.DetectContentType(buff)
@@ -56,5 +64,43 @@ func MakeFileName(value string, form *multipart.FileHeader, file multipart.File)
 	}
 
 	return path, nil
+
+}
+
+func CheckRightPath(filename []byte) error {
+
+	check_file := http.DetectContentType(filename)
+
+	if check_file != "jpg" && check_file != "png" && check_file != "jpeg" {
+		return errors.New("Failed to detect the content type of the file!")
+	}
+
+	return nil
+
+}
+
+func ParsingMultipartFormData(w http.ResponseWriter, r *http.Request) error {
+
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
+
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		return errors.New("Failed to get the body and parsing into an multipart form data!")
+	}
+
+	return nil
+
+}
+
+func ParsingFormValue(r *http.Request) (FieldsFile, error) {
+
+	payloads_file_value := FieldsFile{
+		Name:        r.FormValue("name"),
+		Email:       r.FormValue("email"),
+		Password:    r.FormValue("password"),
+		Role:        r.FormValue("role"),
+		Profile_img: r.FormValue("profile_img"),
+	}
+
+	return payloads_file_value, nil
 
 }

@@ -158,18 +158,17 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 10<<20)
-
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to parsing into a multipart form data!", err.Error())
+	if err := utils.ParsingMultipartFormData(w, r); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to parsing the multipart form data!", err.Error())
 		return
 	}
 
-	var paylod model.PayloadUpdate
-	name := r.FormValue("name")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
-	role := r.FormValue("role")
+	var paylod model.UpdatePayloadUser
+	value_payload, err := utils.ParsingFormValue(r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to parsing the form value!", err.Error())
+		return
+	}
 
 	profile_img, header, err := r.FormFile("profile_img")
 	if err != nil {
@@ -186,7 +185,10 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		utils.DetectContentType(buff)
+		if err := utils.CheckRightPath(buff); err != nil {
+			utils.ResponseError(w, http.StatusBadRequest, "Failed to detect the content type!", err.Error())
+			return
+		}
 
 		path, err := utils.MakeFileName("uploadsProfile", header, profile_img)
 		if err != nil {
@@ -220,10 +222,10 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	utils.PayloaUpdate(&paylod.Name, name)
-	utils.PayloaUpdate(&paylod.Email, email)
-	utils.PayloaUpdate(&paylod.Password, password)
-	utils.PayloaUpdate(&paylod.Role, role)
+	utils.PayloaUpdate(&paylod.Name, value_payload.Name)
+	utils.PayloaUpdate(&paylod.Email, value_payload.Email)
+	utils.PayloaUpdate(&paylod.Password, value_payload.Password)
+	utils.PayloaUpdate(&paylod.Role, value_payload.Role)
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
