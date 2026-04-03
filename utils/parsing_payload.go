@@ -1,10 +1,12 @@
 package utils
 
 import (
-	"project-keuangan-keluarga/model"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+
+	"project-keuangan-keluarga/model"
 )
 
 func ParsingPayloadUser(payload model.Payload) (*model.User, error) {
@@ -26,11 +28,15 @@ func ParsingPayloadUser(payload model.Payload) (*model.User, error) {
 	}, nil
 }
 
-func ParsingPayloadTransaction(payload model.PayloadTransaction) (*model.Transaction, error) {
+func ParsingPayloadTransaction(payload model.PayloadTransaction, userId uuid.UUID) (*model.Transaction, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
 
 	return &model.Transaction{
 		Id:          uuid.New(),
-		UserId:      payload.UserId,
+		UserId:      userId,
 		Type:        payload.Type,
 		Amount:      payload.Amount,
 		CategoryId:  payload.CategoryId,
@@ -41,11 +47,15 @@ func ParsingPayloadTransaction(payload model.PayloadTransaction) (*model.Transac
 	}, nil
 }
 
-func ParsingPayloadCategory(payload model.PayloadCategory) (*model.Category, error) {
+func ParsingPayloadCategory(payload model.PayloadCategory, userId uuid.UUID) (*model.Category, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
 
 	return &model.Category{
 		Id:     uuid.New(),
-		UserId: payload.UserId,
+		UserId: userId,
 		Name:   payload.Name,
 		Type:   payload.Type,
 	}, nil
@@ -66,3 +76,4 @@ func PayloaUpdateInt64(dest **int64, val int64) {
 	}
 
 }
+

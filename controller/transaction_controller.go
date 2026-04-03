@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"net/http"
+	"project-keuangan-keluarga/middleware"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
@@ -30,7 +31,12 @@ func (c *ControllerHandlerTransaction) CreateNewTransactions_Bp(w http.ResponseW
 		return
 	}
 
-	transactions_payload, err := utils.ParsingPayloadTransaction(payload)
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	transactions_payload, err := utils.ParsingPayloadTransaction(payload, userId)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to parse the payload!", err.Error())
 		return

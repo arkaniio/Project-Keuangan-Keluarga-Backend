@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"net/http"
+	"project-keuangan-keluarga/middleware"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
@@ -30,7 +31,12 @@ func (c *ControllerHandlerCategory) CreateNewCategory_Bp(w http.ResponseWriter, 
 		return
 	}
 
-	category, err := utils.ParsingPayloadCategory(payload)
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	category, err := utils.ParsingPayloadCategory(payload, userId)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to parsing the payload", err.Error())
 		return

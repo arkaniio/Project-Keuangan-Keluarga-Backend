@@ -37,26 +37,26 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	userCtrl := controller.NewUserController(userSvc)
 
-	// keuangan injection
-	keuanganRepo := repository.NewTransactionRepository(db)
-	keuanganSvc := service.NewTransactionService(keuanganRepo)
-	keuanganCtrl := controller.NewControllerHandlerTransaction(keuanganSvc)
-
 	// category injection
 	categoryRepo := repository.NewCategoryRepository(db)
 	categorySvc := service.NewCategoryService(categoryRepo)
 	categoryCtrl := controller.NewControllerHandlerCategory(categorySvc)
 
+	// keuangan injection
+	transactionRepo := repository.NewTransactionRepository(db)
+	transactionSvc := service.NewTransactionService(transactionRepo)
+	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
+
 	// ── 3. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
 	subRoiter := route.With()
 	router := routes.UserRoutes(userCtrl)
-	router_keuangan := routes.KeuanganRoutes(keuanganCtrl)
 	router_category := routes.CategoryRoutes(categoryCtrl)
+	router_transaction := routes.KeuanganRoutes(transactionCtrl)
 
 	subRoiter.Mount("/api/v1/users", router)
-	subRoiter.Mount("/api/v1/transactions", router_keuangan)
 	subRoiter.Mount("/api/v1/categories", router_category)
+	subRoiter.Mount("/api/v1/transactions", router_transaction)
 
 	// ── 4. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{
