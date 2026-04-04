@@ -118,3 +118,18 @@ func (c *ControllerHandlerCategory) GetCategoryById_Bp(w http.ResponseWriter, r 
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the category by id!", category_data)
 
 }
+
+func (c *ControllerHandlerCategory) GetAllCategory_Bp(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	category_data, err := c.CategoryService.GetAllCategory(ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the category by id!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the category by id!", category_data)
+
+}

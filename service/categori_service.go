@@ -13,6 +13,7 @@ type CategoryService interface {
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
+	GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error)
 }
 
 type repoCategory struct {
@@ -37,4 +38,8 @@ func (s *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID) error {
 
 func (s *repoCategory) GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error) {
 	return s.repo.GetCategoryById(ctx, id)
+}
+
+func (s *repoCategory) GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error) {
+	return s.repo.GetAllCategory(ctx)
 }

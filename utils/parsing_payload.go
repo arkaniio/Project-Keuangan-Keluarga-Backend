@@ -92,6 +92,25 @@ func PayloadJoinDataTransaction(payload model.PayloadTransactionDataCategory) (*
 
 }
 
+func PayloadJoinDataCategory(payload model.PayloadCategoryWithUserData) (model.PayloadCategoryWithUser, error) {
+
+	if payload.Id == uuid.Nil {
+		return model.PayloadCategoryWithUser{}, errors.New("Failed to get the uuid file type!")
+	}
+
+	return model.PayloadCategoryWithUser{
+		Id:     payload.Id,
+		UserId: payload.UserId,
+		User: model.User{
+			Name:  payload.Username,
+			Email: payload.Email,
+		},
+		Name: payload.Name,
+		Type: payload.Type,
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {

@@ -15,6 +15,7 @@ type CategoryRepository interface {
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
+	GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error)
 }
 
 type repoCategory struct {
@@ -121,5 +122,35 @@ func (r *repoCategory) GetCategoryById(ctx context.Context, id uuid.UUID) (*mode
 	}
 
 	return &category, nil
+
+}
+
+func (r *repoCategory) GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error) {
+
+	query := `
+		SELECT c.id, c.user_id, u.name, c.type
+		FROM categories c
+		JOIN users u ON c.user_id = u.id;
+	`
+
+	var category_array []model.PayloadCategoryWithUser
+	rows, err := r.db.QueryxContext(ctx, query)
+	if err != nil {
+		return nil, errors.New("Failed to get the rows from the db!")
+	}
+
+	for rows.Next() {
+		var category_user_data model.PayloadCategoryWithUserData
+		if err := rows.StructScan(category_user_data); err != nil {
+			return nil, errors.New("Failed to get and detect the rows from db!")
+		}
+		category_data, err := utils.PayloadJoinDataCategory(category_user_data)
+		if err != nil {
+			return nil, errors.New("Failed to get and detect the rows from db!")
+		}
+		category_array = append(category_array, category_data)
+	}
+
+	return category_array, nil
 
 }
