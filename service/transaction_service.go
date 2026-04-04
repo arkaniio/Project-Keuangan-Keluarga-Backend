@@ -12,6 +12,7 @@ type TransactionService interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
+	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 }
 
 type repoTransaction struct {
@@ -32,4 +33,8 @@ func (s *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, p
 
 func (s *repoTransaction) DeleteTransaction(ctx context.Context, id uuid.UUID) error {
 	return s.repo.DeleteTransaction(ctx, id)
+}
+
+func (s *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error) {
+	return s.repo.GetTransactionById(ctx, id)
 }

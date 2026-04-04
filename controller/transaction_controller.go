@@ -97,3 +97,23 @@ func (c *ControllerHandlerTransaction) DeleteTransaction_Bp(w http.ResponseWrite
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully deleted the transaction!", nil)
 
 }
+
+func (c *ControllerHandlerTransaction) GetTransactionById_Bp(w http.ResponseWriter, r *http.Request) {
+
+	id_params, err := utils.ParamsChiRouter("id", r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the params use chi router!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	transaction_data, err := c.TransactionService.GetTransactionById(ctx, id_params)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction by id!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the transaction by id!", transaction_data)
+}

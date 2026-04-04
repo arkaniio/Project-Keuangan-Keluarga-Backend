@@ -14,6 +14,7 @@ type TransactionRepository interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
+	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 }
 
 type repoTransaction struct {
@@ -30,11 +31,16 @@ func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 	if err != nil {
 		return errors.New("Failed to setup the transactions settings!")
 	}
+	defer db_tx.Rollback()
 
 	query := `
 		INSERT INTO transactions(id, user_id, type, amount, category_id, description, date, created_at, updated_at) 
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);
 	`
+
+	if transaction.Type != "expense" && transaction.Type != "income" {
+		return errors.New("Failed to detect for a type, invalid type!")
+	}
 
 	rows, err := db_tx.ExecContext(ctx, query, transaction.Id, transaction.UserId, transaction.Type, transaction.Amount, transaction.CategoryId, transaction.Description, transaction.Date, transaction.CreatedAt, transaction.UpdatedAt)
 	if err != nil {
@@ -104,5 +110,20 @@ func (r *repoTransaction) DeleteTransaction(ctx context.Context, id uuid.UUID) e
 	}
 
 	return nil
+
+}
+
+func (r *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error) {
+
+	query := `
+		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at FROM transactions WHERE id = $1;
+	`
+
+	var transaction model.Transaction
+	if err := r.db.GetContext(ctx, &transaction, query, id); err != nil {
+		return nil, errors.New("Failed to get the transaction!")
+	}
+
+	return &transaction, nil
 
 }

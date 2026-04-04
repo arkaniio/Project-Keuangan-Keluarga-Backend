@@ -30,6 +30,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *
 	// API v1 routes
 	r.Post("/", transactionsCtrl.CreateNewTransactions_Bp)
 	r.Patch("/route", transactionsCtrl.UpdateTransactions_Bp)
+	r.Get("/:id", transactionsCtrl.GetTransactionById_Bp)
 
 	return r
 }
