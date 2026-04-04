@@ -121,15 +121,19 @@ func (c *ControllerHandlerCategory) GetCategoryById_Bp(w http.ResponseWriter, r 
 
 func (c *ControllerHandlerCategory) GetAllCategory_Bp(w http.ResponseWriter, r *http.Request) {
 
+	// Parse pagination from query params
+	allowedSorts := []string{"name", "type"}
+	params := utils.ParsePaginationParams(r, allowedSorts, "name")
+
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	category_data, err := c.CategoryService.GetAllCategory(ctx)
+	paginatedData, err := c.CategoryService.GetAllCategory(ctx, params)
 	if err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the category by id!", err.Error())
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get categories!", err.Error())
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the category by id!", category_data)
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully retrieved categories!", paginatedData)
 
 }

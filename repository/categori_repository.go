@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/utils"
 
@@ -15,7 +16,7 @@ type CategoryRepository interface {
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
-	GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error)
+	GetAllCategory(ctx context.Context, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error)
 }
 
 type repoCategory struct {
@@ -125,32 +126,60 @@ func (r *repoCategory) GetCategoryById(ctx context.Context, id uuid.UUID) (*mode
 
 }
 
-func (r *repoCategory) GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error) {
+func (r *repoCategory) GetAllCategory(ctx context.Context, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error) {
 
-	query := `
+	// ── Build dynamic WHERE clause ─────────────────────────────
+	where := ""
+	args := []interface{}{}
+	argIdx := 1
+
+	if params.Search != "" {
+		where = fmt.Sprintf(" WHERE c.name ILIKE $%d", argIdx)
+		args = append(args, "%"+params.Search+"%")
+		argIdx++
+	}
+
+	// ── Count total items ──────────────────────────────────────
+	countQuery := "SELECT COUNT(*) FROM categories c JOIN users u ON c.user_id = u.id" + where
+
+	var totalItems int
+	if err := r.db.GetContext(ctx, &totalItems, countQuery, args...); err != nil {
+		return nil, 0, errors.New("Failed to count categories: " + err.Error())
+	}
+
+	// ── Fetch paginated data ───────────────────────────────────
+	offset := utils.CalculateOffset(params.Page, params.Limit)
+
+	dataQuery := fmt.Sprintf(`
 		SELECT c.id, c.user_id, u.name, c.type
 		FROM categories c
-		JOIN users u ON c.user_id = u.id;
-	`
+		JOIN users u ON c.user_id = u.id
+		%s
+		ORDER BY c.%s %s
+		LIMIT $%d OFFSET $%d
+	`, where, params.Sort, params.Order, argIdx, argIdx+1)
+
+	args = append(args, params.Limit, offset)
 
 	var category_array []model.PayloadCategoryWithUser
-	rows, err := r.db.QueryxContext(ctx, query)
+	rows, err := r.db.QueryxContext(ctx, dataQuery, args...)
 	if err != nil {
-		return nil, errors.New("Failed to get the rows from the db!")
+		return nil, 0, errors.New("Failed to get the rows from the db: " + err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var category_user_data model.PayloadCategoryWithUserData
-		if err := rows.StructScan(category_user_data); err != nil {
-			return nil, errors.New("Failed to get and detect the rows from db!")
+		if err := rows.StructScan(&category_user_data); err != nil {
+			return nil, 0, errors.New("Failed to get and detect the rows from db: " + err.Error())
 		}
 		category_data, err := utils.PayloadJoinDataCategory(category_user_data)
 		if err != nil {
-			return nil, errors.New("Failed to get and detect the rows from db!")
+			return nil, 0, errors.New("Failed to parse category data: " + err.Error())
 		}
 		category_array = append(category_array, category_data)
 	}
 
-	return category_array, nil
+	return category_array, totalItems, nil
 
 }

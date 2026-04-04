@@ -4,6 +4,7 @@ import (
 	"context"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
+	"project-keuangan-keluarga/utils"
 
 	"github.com/google/uuid"
 )
@@ -13,7 +14,7 @@ type CategoryService interface {
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
-	GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error)
+	GetAllCategory(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
 }
 
 type repoCategory struct {
@@ -40,6 +41,16 @@ func (s *repoCategory) GetCategoryById(ctx context.Context, id uuid.UUID) (*mode
 	return s.repo.GetCategoryById(ctx, id)
 }
 
-func (s *repoCategory) GetAllCategory(ctx context.Context) ([]model.PayloadCategoryWithUser, error) {
-	return s.repo.GetAllCategory(ctx)
+func (s *repoCategory) GetAllCategory(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error) {
+	items, totalItems, err := s.repo.GetAllCategory(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	meta := utils.BuildPaginationMeta(totalItems, params.Page, params.Limit)
+
+	return &model.PaginatedResponse{
+		Items:      items,
+		Pagination: meta,
+	}, nil
 }

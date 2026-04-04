@@ -120,14 +120,18 @@ func (c *ControllerHandlerTransaction) GetTransactionById_Bp(w http.ResponseWrit
 
 func (c *ControllerHandlerTransaction) GetAllTransaction_Bp(w http.ResponseWriter, r *http.Request) {
 
+	// Parse pagination from query params
+	allowedSorts := []string{"created_at", "amount", "date", "type"}
+	params := utils.ParsePaginationParams(r, allowedSorts, "created_at")
+
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	transaction_data, err := c.TransactionService.GetAllTransaction(ctx)
+	paginatedData, err := c.TransactionService.GetAllTransaction(ctx, params)
 	if err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction by id!", err.Error())
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get transactions!", err.Error())
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the transaction by id!", transaction_data)
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully retrieved transactions!", paginatedData)
 }

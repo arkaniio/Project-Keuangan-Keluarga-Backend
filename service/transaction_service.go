@@ -4,6 +4,7 @@ import (
 	"context"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
+	"project-keuangan-keluarga/utils"
 
 	"github.com/google/uuid"
 )
@@ -13,7 +14,7 @@ type TransactionService interface {
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
-	GetAllTransaction(ctx context.Context) ([]model.PayloadTransactionWithCategory, error)
+	GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
 }
 
 type repoTransaction struct {
@@ -40,6 +41,16 @@ func (s *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) 
 	return s.repo.GetTransactionById(ctx, id)
 }
 
-func (s *repoTransaction) GetAllTransaction(ctx context.Context) ([]model.PayloadTransactionWithCategory, error) {
-	return s.repo.GetAllTransaction(ctx)
+func (s *repoTransaction) GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error) {
+	items, totalItems, err := s.repo.GetAllTransaction(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	meta := utils.BuildPaginationMeta(totalItems, params.Page, params.Limit)
+
+	return &model.PaginatedResponse{
+		Items:      items,
+		Pagination: meta,
+	}, nil
 }

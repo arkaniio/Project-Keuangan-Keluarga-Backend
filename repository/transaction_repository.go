@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/utils"
 
@@ -15,7 +16,7 @@ type TransactionRepository interface {
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
-	GetAllTransaction(ctx context.Context) ([]model.PayloadTransactionWithCategory, error)
+	GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
 }
 
 type repoTransaction struct {
@@ -129,32 +130,60 @@ func (r *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) 
 
 }
 
-func (r *repoTransaction) GetAllTransaction(ctx context.Context) ([]model.PayloadTransactionWithCategory, error) {
+func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error) {
 
-	query := `
+	// ── Build dynamic WHERE clause ─────────────────────────────
+	where := ""
+	args := []interface{}{}
+	argIdx := 1
+
+	if params.Search != "" {
+		where = fmt.Sprintf(" WHERE t.description ILIKE $%d", argIdx)
+		args = append(args, "%"+params.Search+"%")
+		argIdx++
+	}
+
+	// ── Count total items ──────────────────────────────────────
+	countQuery := "SELECT COUNT(*) FROM transactions t JOIN categories c ON t.category_id = c.id" + where
+
+	var totalItems int
+	if err := r.db.GetContext(ctx, &totalItems, countQuery, args...); err != nil {
+		return nil, 0, errors.New("Failed to count transactions: " + err.Error())
+	}
+
+	// ── Fetch paginated data ───────────────────────────────────
+	offset := utils.CalculateOffset(params.Page, params.Limit)
+
+	dataQuery := fmt.Sprintf(`
 		SELECT t.id, t.user_id, t.type, t.amount, t.category_id, t.description, t.date, t.created_at, t.updated_at
 		FROM transactions t
-		JOIN categories c ON t.category_id = c.id;
-	`
+		JOIN categories c ON t.category_id = c.id
+		%s
+		ORDER BY t.%s %s
+		LIMIT $%d OFFSET $%d
+	`, where, params.Sort, params.Order, argIdx, argIdx+1)
+
+	args = append(args, params.Limit, offset)
 
 	var transaction_array []model.PayloadTransactionWithCategory
-	rows, err := r.db.QueryxContext(ctx, query)
+	rows, err := r.db.QueryxContext(ctx, dataQuery, args...)
 	if err != nil {
-		return nil, errors.New("Failed to load and query data transaction!")
+		return nil, 0, errors.New("Failed to load and query data transaction: " + err.Error())
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var transaction_data model.PayloadTransactionDataCategory
-		if err := rows.StructScan(transaction_data); err != nil {
-			return nil, errors.New("Failed to get the transaction data and scan it into and struct")
+		if err := rows.StructScan(&transaction_data); err != nil {
+			return nil, 0, errors.New("Failed to scan transaction data: " + err.Error())
 		}
 		second_rows, err := utils.PayloadJoinDataTransaction(transaction_data)
 		if err != nil {
-			return nil, errors.New("Failed to get the transaction data and join it into and struct")
+			return nil, 0, errors.New("Failed to parse transaction data: " + err.Error())
 		}
 		transaction_array = append(transaction_array, *second_rows)
 	}
 
-	return transaction_array, nil
+	return transaction_array, totalItems, nil
 
 }
