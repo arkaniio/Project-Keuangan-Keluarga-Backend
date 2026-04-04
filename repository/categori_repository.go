@@ -14,6 +14,7 @@ type CategoryRepository interface {
 	CreateNewCategory(ctx context.Context, categories *model.Category) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 	DeleteCategory(ctx context.Context, id uuid.UUID) error
+	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
 }
 
 type repoCategory struct {
@@ -105,5 +106,20 @@ func (r *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
+
+}
+
+func (r *repoCategory) GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error) {
+
+	query := `
+		SELECT id, user_id, name, type FROM categories WHERE id = $1;
+	`
+
+	var category model.Category
+	if err := r.db.GetContext(ctx, &category, query, id); err != nil {
+		return nil, errors.New("Failed to execute the db!" + err.Error())
+	}
+
+	return &category, nil
 
 }
