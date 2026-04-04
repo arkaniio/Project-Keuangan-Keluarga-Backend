@@ -20,3 +20,20 @@ type UpdatePayloadCategory struct {
 	Name *string `json:"name"`
 	Type *string `json:"type"`
 }
+
+type PayloadCategoryWithUser struct {
+	Id     uuid.UUID `json:"id"`
+	UserId uuid.UUID `json:"user_id"`
+	User   User      `json:"user"`
+	Name   string    `json:"name"`
+	Type   string    `json:"type"`
+}
+
+type PayloadCategoryWithUserData struct {
+	Id       uuid.UUID `json:"id"`
+	UserId   uuid.UUID `json:"user_id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+	Name     string    `json:"name"`
+	Type     string    `json:"type"`
+}
