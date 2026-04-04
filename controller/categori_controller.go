@@ -97,3 +97,24 @@ func (c *ControllerHandlerCategory) DeleteCategory_Bp(w http.ResponseWriter, r *
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully deleted the category!", nil)
 
 }
+
+func (c *ControllerHandlerCategory) GetCategoryById_Bp(w http.ResponseWriter, r *http.Request) {
+
+	id_params, err := utils.ParamsChiRouter("id", r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the params use chi router!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	category_data, err := c.CategoryService.GetCategoryById(ctx, id_params)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the category by id!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the category by id!", category_data)
+
+}

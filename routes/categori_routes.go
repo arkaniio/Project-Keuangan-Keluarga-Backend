@@ -30,6 +30,7 @@ func CategoryRoutes(categoryCtrl *controller.ControllerHandlerCategory) *chi.Mux
 	// API v1 routes
 	r.Post("/", categoryCtrl.CreateNewCategory_Bp)
 	r.Patch("/update", categoryCtrl.UpdateCategory_Bp)
+	r.Get("/", categoryCtrl.GetCategoryById_Bp)
 
 	return r
 }
