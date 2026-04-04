@@ -69,6 +69,29 @@ func PayloaUpdate(dest **string, val string) {
 
 }
 
+func PayloadJoinDataTransaction(payload model.PayloadTransactionDataCategory) (*model.PayloadTransactionWithCategory, error) {
+
+	if payload.Id == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.PayloadTransactionWithCategory{
+		Id:          payload.Id,
+		UserId:      payload.UserId,
+		Type:        payload.Type,
+		Amount:      payload.Amount,
+		CategoryId:  payload.CategoryId,
+		Description: payload.Description,
+		Date:        payload.Date,
+		CreatedAt:   payload.CreatedAt,
+		UpdatedAt:   payload.UpdatedAt,
+		Category: model.Category{
+			Name: payload.Name,
+		},
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {
@@ -76,4 +99,3 @@ func PayloaUpdateInt64(dest **int64, val int64) {
 	}
 
 }
-

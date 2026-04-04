@@ -117,3 +117,17 @@ func (c *ControllerHandlerTransaction) GetTransactionById_Bp(w http.ResponseWrit
 
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the transaction by id!", transaction_data)
 }
+
+func (c *ControllerHandlerTransaction) GetAllTransaction_Bp(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	transaction_data, err := c.TransactionService.GetAllTransaction(ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction by id!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the transaction by id!", transaction_data)
+}

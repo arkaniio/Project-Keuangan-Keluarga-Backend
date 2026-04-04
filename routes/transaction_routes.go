@@ -31,6 +31,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *
 	r.Post("/", transactionsCtrl.CreateNewTransactions_Bp)
 	r.Patch("/route", transactionsCtrl.UpdateTransactions_Bp)
 	r.Get("/:id", transactionsCtrl.GetTransactionById_Bp)
+	r.Get("/", transactionsCtrl.GetAllTransaction_Bp)
 
 	return r
 }

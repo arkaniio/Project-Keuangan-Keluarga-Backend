@@ -35,3 +35,29 @@ type UpdatePayloadTransaction struct {
 	Description *string    `json:"description"`
 	Date        *time.Time `json:"date"`
 }
+
+type PayloadTransactionWithCategory struct {
+	Id          uuid.UUID `json:"id"`
+	UserId      uuid.UUID `json:"user_id"`
+	Type        string    `json:"type"`
+	Amount      int64     `json:"amount"`
+	CategoryId  uuid.UUID `json:"category_id"`
+	Category    Category  `json:"category"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type PayloadTransactionDataCategory struct {
+	Id          uuid.UUID `json:"id"`
+	UserId      uuid.UUID `json:"user_id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	Amount      int64     `json:"amount"`
+	CategoryId  uuid.UUID `json:"category_id"`
+	Description string    `json:"description"`
+	Date        time.Time `json:"date"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}

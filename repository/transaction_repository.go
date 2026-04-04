@@ -15,6 +15,7 @@ type TransactionRepository interface {
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
+	GetAllTransaction(ctx context.Context) ([]model.PayloadTransactionWithCategory, error)
 }
 
 type repoTransaction struct {
@@ -125,5 +126,35 @@ func (r *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) 
 	}
 
 	return &transaction, nil
+
+}
+
+func (r *repoTransaction) GetAllTransaction(ctx context.Context) ([]model.PayloadTransactionWithCategory, error) {
+
+	query := `
+		SELECT t.id, t.user_id, t.type, t.amount, t.category_id, t.description, t.date, t.created_at, t.updated_at
+		FROM transactions t
+		JOIN categories c ON t.category_id = c.id;
+	`
+
+	var transaction_array []model.PayloadTransactionWithCategory
+	rows, err := r.db.QueryxContext(ctx, query)
+	if err != nil {
+		return nil, errors.New("Failed to load and query data transaction!")
+	}
+
+	for rows.Next() {
+		var transaction_data model.PayloadTransactionDataCategory
+		if err := rows.StructScan(transaction_data); err != nil {
+			return nil, errors.New("Failed to get the transaction data and scan it into and struct")
+		}
+		second_rows, err := utils.PayloadJoinDataTransaction(transaction_data)
+		if err != nil {
+			return nil, errors.New("Failed to get the transaction data and join it into and struct")
+		}
+		transaction_array = append(transaction_array, *second_rows)
+	}
+
+	return transaction_array, nil
 
 }
