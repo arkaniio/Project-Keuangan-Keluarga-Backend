@@ -16,6 +16,7 @@ type TransactionService interface {
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
 	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
+	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
 }
 
 type repoTransaction struct {
@@ -58,4 +59,8 @@ func (s *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 
 func (s *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error) {
 	return s.repo.GetAvgIncomeDay(ctx, user_id)
+}
+
+func (s *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error) {
+	return s.repo.GetAvgExpenseDay(ctx, user_id)
 }
