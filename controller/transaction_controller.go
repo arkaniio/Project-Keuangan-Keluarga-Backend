@@ -186,3 +186,28 @@ func (c *ControllerHandlerTransaction) GetAvgExpenseDay_Bp(w http.ResponseWriter
 	utils.ResponseSuccess(w, http.StatusOK, "Get avg expense p day has been successfully!", avg_expense_data)
 
 }
+
+func (c *ControllerHandlerTransaction) GetAvgIncomeWeek_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", err.Error())
+		return
+	}
+	if middleware_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	avg_income_week_data, err := c.TransactionService.GetAvgIncomeWeek(ctx, middleware_id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the avg income week data!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get avg income p week has been successfully!", avg_income_week_data)
+
+}
