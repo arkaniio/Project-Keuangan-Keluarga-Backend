@@ -16,8 +16,6 @@ type fieldMapping struct {
 	IsSet  bool        // true if the pointer field is not nil
 }
 
-// buildUpdateQuery is a generic helper that builds a dynamic UPDATE query
-// from a slice of field mappings, a table name, and the row ID.
 func buildUpdateQuery(table string, fields []fieldMapping, id uuid.UUID) (string, []interface{}, error) {
 	var settings []string
 	var args []interface{}
