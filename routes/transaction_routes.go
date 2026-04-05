@@ -35,6 +35,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *
 	r.Get("/avg-income-day", transactionsCtrl.GetAvgIncomeDay_Bp)
 	r.Get("/avg-expense-day", transactionsCtrl.GetAvgExpenseDay_Bp)
 	r.Get("/avg-income-week", transactionsCtrl.GetAvgIncomeWeek_Bp)
+	r.Get("/avg-expense-week", transactionsCtrl.GetAvgExpenseWeek_Bp)
 
 	return r
 }
