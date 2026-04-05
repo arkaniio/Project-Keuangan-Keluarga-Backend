@@ -16,7 +16,7 @@ type fieldMapping struct {
 	IsSet  bool        // true if the pointer field is not nil
 }
 
-func buildUpdateQuery(table string, fields []fieldMapping, id uuid.UUID) (string, []interface{}, error) {
+func buildUpdateQuery(table string, fields []fieldMapping, user_id uuid.UUID) (string, []interface{}, error) {
 	var settings []string
 	var args []interface{}
 	argIdx := 1
@@ -33,10 +33,31 @@ func buildUpdateQuery(table string, fields []fieldMapping, id uuid.UUID) (string
 		return "", nil, errors.New("no fields to update")
 	}
 
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d", table, strings.Join(settings, ", "), argIdx)
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE user_id = $%d", table, strings.Join(settings, ", "), argIdx)
+	args = append(args, user_id)
+
+	return query, args, nil
+}
+
+func buildUpdateQueryWithId(table string, fields []fieldMapping, id uuid.UUID) (string, []interface{}, error) {
+
+	var settings []string
+	var args []interface{}
+	argsId := 1
+
+	for _, f := range fields {
+		if f.IsSet {
+			settings = append(settings, fmt.Sprintf("%s=$%d", f.Column, argsId))
+			args = append(args, f.Value)
+			argsId++
+		}
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d", table, strings.Join(settings, ", "), argsId)
 	args = append(args, id)
 
 	return query, args, nil
+
 }
 
 func UpdateToolsCategory(payload model.UpdatePayloadCategory, id uuid.UUID) (string, []interface{}, error) {
