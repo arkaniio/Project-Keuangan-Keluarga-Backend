@@ -32,6 +32,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *
 	r.Patch("/route", transactionsCtrl.UpdateTransactions_Bp)
 	r.Get("/{id}", transactionsCtrl.GetTransactionById_Bp)
 	r.Get("/all", transactionsCtrl.GetAllTransaction_Bp)
+	r.Get("/avg-income-day", transactionsCtrl.GetAvgIncomeDay_Bp)
 
 	return r
 }

@@ -8,6 +8,8 @@ import (
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ControllerHandlerTransaction struct {
@@ -134,4 +136,29 @@ func (c *ControllerHandlerTransaction) GetAllTransaction_Bp(w http.ResponseWrite
 	}
 
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully retrieved transactions!", paginatedData)
+}
+
+func (c *ControllerHandlerTransaction) GetAvgIncomeDay_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_user_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from middleware token!", err.Error())
+		return
+	}
+	if middleware_user_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from middleware token!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	avg_income_data, err := c.TransactionService.GetAvgIncomeDay(ctx, middleware_user_id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the income avg data!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get avg income p day has been successfully!", avg_income_data)
+
 }
