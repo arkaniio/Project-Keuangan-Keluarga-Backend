@@ -19,6 +19,8 @@ type TransactionService interface {
 	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
 	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error)
 	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error)
+	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
+	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
 }
 
 type repoTransaction struct {
@@ -73,4 +75,12 @@ func (s *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUI
 
 func (s *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error) {
 	return s.repo.GetAvgExpenseWeek(ctx, user_id)
+}
+
+func (s *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error) {
+	return s.repo.GetAvgIncomeMonth(ctx, user_id)
+}
+
+func (s *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error) {
+	return s.repo.GetAvgExpenseMonth(ctx, user_id)
 }

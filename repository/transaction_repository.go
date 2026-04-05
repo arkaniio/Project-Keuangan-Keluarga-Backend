@@ -21,6 +21,8 @@ type TransactionRepository interface {
 	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
 	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error)
 	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error)
+	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
+	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
 }
 
 type repoTransaction struct {
@@ -305,5 +307,63 @@ func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UU
 	}
 
 	return avg_expense_week, nil
+
+}
+
+func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error) {
+
+	query := `
+		SELECT DATE_TRUNC('month', date) as month
+			   AVG(amount) as avg_income_month
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'income'
+		ORDER BY month
+		GROUP BY month
+	`
+
+	var avg_income_month []model.AvgIncomeMonth
+	rows, err := r.db.QueryxContext(ctx, query, user_id)
+	if err != nil {
+		return nil, errors.New("Failed to get the avg income month!")
+	}
+
+	for rows.Next() {
+		var avg_income_month_struct model.AvgIncomeMonth
+		if err := rows.StructScan(avg_income_month_struct); err != nil {
+			return nil, errors.New("Failed to get the avg_income_month!")
+		}
+		avg_income_month = append(avg_income_month, avg_income_month_struct)
+	}
+
+	return avg_income_month, nil
+
+}
+
+func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error) {
+
+	query := `
+		SELECT DATE_TRUNC('month', date) as month
+			   AVG(amount) as avg_expense_month
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'expense'
+		ORDER BY month
+		GROUP BY month
+	`
+
+	var avg_expense_month []model.AvgExpenseMonth
+	rows, err := r.db.QueryxContext(ctx, query, user_id)
+	if err != nil {
+		return nil, errors.New("Failed to get the avg expense month!")
+	}
+
+	for rows.Next() {
+		var avg_expense_month_struct model.AvgExpenseMonth
+		if err := rows.StructScan(avg_expense_month_struct); err != nil {
+			return nil, errors.New("Failed to get the avg_expense_month!")
+		}
+		avg_expense_month = append(avg_expense_month, avg_expense_month_struct)
+	}
+
+	return avg_expense_month, nil
 
 }
