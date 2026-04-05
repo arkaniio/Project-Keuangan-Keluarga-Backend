@@ -19,6 +19,7 @@ type TransactionRepository interface {
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
 	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
 	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
+	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error)
 }
 
 type repoTransaction struct {
@@ -245,5 +246,34 @@ func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUI
 	}
 
 	return avg_expense_array, nil
+
+}
+
+func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error) {
+
+	query := `
+		SELECT DATE_TRUNC('week', date) as week
+			   AVG(amount) as avg_income_week
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'income'
+		ORDER BY week
+		GROUP BY week
+	`
+
+	var avg_income_week []model.AvgIncomeWeek
+	rows, err := r.db.QueryxContext(ctx, query, user_id)
+	if err != nil {
+		return nil, errors.New("Failed to get the avg income week!")
+	}
+
+	for rows.Next() {
+		var avg_income_week_struct model.AvgIncomeWeek
+		if err := rows.StructScan(avg_income_week_struct); err != nil {
+			return nil, errors.New("Failed to get the avg_income_week!")
+		}
+		avg_income_week = append(avg_income_week, avg_income_week_struct)
+	}
+
+	return avg_income_week, nil
 
 }
