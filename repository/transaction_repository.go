@@ -17,6 +17,7 @@ type TransactionRepository interface {
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
+	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
 }
 
 type repoTransaction struct {
@@ -185,5 +186,34 @@ func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 	}
 
 	return transaction_array, totalItems, nil
+
+}
+
+func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error) {
+
+	query := `
+		SELECT DATE(date) as day,
+			   AVG(amount) as avg_income
+		FROM transactions
+		WHERE user_id = $1 AND type = 'income'
+		GROUP BY day
+		ORDER BY day ASC;
+	`
+
+	var avg_income_data_day []model.AvgIncomeDay
+	rows, err := r.db.QueryxContext(ctx, query, user_id)
+	if err != nil {
+		return nil, errors.New("Failed to get the income data svg!")
+	}
+
+	for rows.Next() {
+		var income_data_struct model.AvgIncomeDay
+		if err := rows.StructScan(income_data_struct); err != nil {
+			return nil, errors.New("Failed to get the income data struct from model!")
+		}
+		avg_income_data_day = append(avg_income_data_day, income_data_struct)
+	}
+
+	return avg_income_data_day, nil
 
 }

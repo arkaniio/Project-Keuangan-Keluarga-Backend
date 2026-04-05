@@ -15,6 +15,7 @@ type TransactionService interface {
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
+	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
 }
 
 type repoTransaction struct {
@@ -53,4 +54,8 @@ func (s *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 		Items:      items,
 		Pagination: meta,
 	}, nil
+}
+
+func (s *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error) {
+	return s.repo.GetAvgIncomeDay(ctx, user_id)
 }
