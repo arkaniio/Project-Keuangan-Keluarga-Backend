@@ -63,31 +63,31 @@ type PayloadTransactionDataCategory struct {
 }
 
 type AvgIncomeDay struct {
-	Day       string `json:"day"`
-	AvgIncome int64  `json:"avg_income"`
+	Day       string  `json:"day"`
+	AvgIncome float64 `json:"avg_income"`
 }
 
 type AvgExpenseDay struct {
-	Day        string `json:"day"`
-	AvgExpense int64  `json:"avg_expense"`
+	Day        string  `json:"day"`
+	AvgExpense float64 `json:"avg_expense"`
 }
 
 type AvgIncomeWeek struct {
-	Week      string `json:"week"`
-	AvgIncome int64  `json:"income"`
+	Week      string  `json:"week"`
+	AvgIncome float64 `json:"income"`
 }
 
 type AvgExpenseWeek struct {
-	Week       string `json:"week"`
-	AvgExpense int64  `json:"expense"`
+	Week       string  `json:"week"`
+	AvgExpense float64 `json:"expense"`
 }
 
 type AvgIncomeMonth struct {
-	Month     string `json:"month"`
-	AvgIncome int64  `json:"income"`
+	Month     string  `json:"month"`
+	AvgIncome float64 `json:"income"`
 }
 
 type AvgExpenseMonth struct {
-	Month      string `json:"month"`
-	AvgExpense int64  `json:"expense"`
+	Month      string  `json:"month"`
+	AvgExpense float64 `json:"expense"`
 }

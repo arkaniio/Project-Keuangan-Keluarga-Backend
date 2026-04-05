@@ -18,6 +18,7 @@ type TransactionRepository interface {
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
 	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
+	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
 }
 
 type repoTransaction struct {
@@ -215,5 +216,34 @@ func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID
 	}
 
 	return avg_income_data_day, nil
+
+}
+
+func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error) {
+
+	query := `
+		SELECT DATE_TRUNC('day', date) as day
+			   AVG(amount) as avg_expense
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'expense'
+		ORDER BY day DESC
+		GROUP BY day;
+	`
+
+	var avg_expense_array []model.AvgExpenseDay
+	rows, err := r.db.QueryxContext(ctx, query, user_id)
+	if err != nil {
+		return nil, errors.New("Failed to detect some data in db!")
+	}
+
+	for rows.Next() {
+		var avg_expense_struct model.AvgExpenseDay
+		if err := rows.StructScan(avg_expense_struct); err != nil {
+			return nil, errors.New("Failed to scan the avg expense data!")
+		}
+		avg_expense_array = append(avg_expense_array, avg_expense_struct)
+	}
+
+	return avg_expense_array, nil
 
 }
