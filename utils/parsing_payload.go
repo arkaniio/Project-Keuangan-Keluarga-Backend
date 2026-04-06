@@ -102,6 +102,7 @@ func PayloadJoinDataCategory(payload model.PayloadCategoryWithUserData) (model.P
 		Id:     payload.Id,
 		UserId: payload.UserId,
 		User: model.User{
+			Id:    payload.UserId,
 			Name:  payload.Username,
 			Email: payload.Email,
 		},

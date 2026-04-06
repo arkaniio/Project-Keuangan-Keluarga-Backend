@@ -22,18 +22,18 @@ type UpdatePayloadCategory struct {
 }
 
 type PayloadCategoryWithUser struct {
-	Id     uuid.UUID `json:"id"`
-	UserId uuid.UUID `json:"user_id"`
+	Id     uuid.UUID `db:"id"`
+	UserId uuid.UUID `db:"user_id"`
 	User   User      `json:"user"`
-	Name   string    `json:"name"`
-	Type   string    `json:"type"`
+	Name   string    `db:"name"`
+	Type   string    `db:"type"`
 }
 
 type PayloadCategoryWithUserData struct {
-	Id       uuid.UUID `json:"id"`
-	UserId   uuid.UUID `json:"user_id"`
-	Username string    `json:"username"`
-	Email    string    `json:"email"`
-	Name     string    `json:"name"`
-	Type     string    `json:"type"`
+	Id       uuid.UUID `db:"id"`
+	UserId   uuid.UUID `db:"user_id"`
+	Username string    `db:"username"`
+	Email    string    `db:"email"`
+	Name     string    `db:"name"`
+	Type     string    `db:"type"`
 }
