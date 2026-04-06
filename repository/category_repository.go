@@ -31,9 +31,9 @@ func (r *repoCategory) CreateNewCategory(ctx context.Context, categories *model.
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
+		db_tx.Rollback()
 		return errors.New("Failed to settings and add the transactions for this method!")
 	}
-	defer db_tx.Rollback()
 
 	query := `
 		INSERT INTO categories(id, user_id, name, type) 
@@ -66,9 +66,9 @@ func (r *repoCategory) UpdateCategory(ctx context.Context, id uuid.UUID, payload
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
+		db_tx.Rollback()
 		return errors.New("Failed to add and settings the transactions")
 	}
-	defer db_tx.Rollback()
 
 	full_query, args, err := utils.UpdateToolsCategory(payload, id)
 	if err != nil {
@@ -151,7 +151,7 @@ func (r *repoCategory) GetAllCategory(ctx context.Context, params model.Paginati
 	offset := utils.CalculateOffset(params.Page, params.Limit)
 
 	dataQuery := fmt.Sprintf(`
-		SELECT c.id, c.user_id, u.name, c.type
+		SELECT c.id, c.user_id, u.username, u.email, c.name, c.type
 		FROM categories c
 		JOIN users u ON c.user_id = u.id
 		%s

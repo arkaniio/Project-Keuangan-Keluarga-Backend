@@ -18,7 +18,7 @@ func ParsingPayloadUser(payload model.Payload) (*model.User, error) {
 
 	return &model.User{
 		Id:          uuid.New(),
-		Name:        payload.Name,
+		Username:    payload.Username,
 		Email:       payload.Email,
 		Password:    hashing_password,
 		Role:        payload.Role,
@@ -102,12 +102,12 @@ func PayloadJoinDataCategory(payload model.PayloadCategoryWithUserData) (model.P
 		Id:     payload.Id,
 		UserId: payload.UserId,
 		User: model.User{
-			Id:    payload.UserId,
-			Name:  payload.Username,
-			Email: payload.Email,
+			Id:       payload.UserId,
+			Username: payload.Username,
+			Email:    payload.Email,
 		},
-		Name: payload.Name,
-		Type: payload.Type,
+		Name: payload.CategoryName,
+		Type: payload.CategoryType,
 	}, nil
 
 }

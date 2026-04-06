@@ -10,7 +10,7 @@ import (
 // Replace or extend this struct when implementing real domain models.
 type User struct {
 	Id          uuid.UUID `db:"id"`
-	Name        string    `db:"name"`
+	Username    string    `db:"username"`
 	Email       string    `db:"email"`
 	Password    string    `db:"password"`
 	Role        string    `db:"role"`
@@ -21,7 +21,7 @@ type User struct {
 
 type Payload struct {
 	Id          uuid.UUID `json:"id"`
-	Name        string    `json:"name" validate:"required"`
+	Username    string    `json:"username" validate:"required"`
 	Email       string    `json:"email" validate:"required,email"`
 	Password    string    `json:"password" validate:"required"`
 	Role        string    `json:"role" validate:"required"`
@@ -37,9 +37,9 @@ type LoginPayload struct {
 
 type UpdatePayloadUser struct {
 	Id          uuid.UUID `json:"id"`
-	Name        *string   `json:"name" validate:"required"`
-	Email       *string   `json:"email" validate:"required,email"`
-	Password    *string   `json:"password" validate:"required"`
-	Role        *string   `json:"role" validate:"required"`
+	Username    *string   `json:"username"`
+	Email       *string   `json:"email"`
+	Password    *string   `json:"password"`
+	Role        *string   `json:"role"`
 	Profile_img *string   `json:"profile_img"`
 }

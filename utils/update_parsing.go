@@ -120,7 +120,7 @@ func UpdateToolsUser(payload model.UpdatePayloadUser, id uuid.UUID) (string, []i
 
 	field := []fieldMapping{
 		{
-			Column: "name", Value: valOrNil(payload.Name), IsSet: payload.Name != nil,
+			Column: "username", Value: valOrNil(payload.Username), IsSet: payload.Username != nil,
 		},
 		{
 			Column: "email", Value: valOrNil(payload.Email), IsSet: payload.Email != nil,

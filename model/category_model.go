@@ -30,10 +30,10 @@ type PayloadCategoryWithUser struct {
 }
 
 type PayloadCategoryWithUserData struct {
-	Id       uuid.UUID `db:"id"`
-	UserId   uuid.UUID `db:"user_id"`
-	Username string    `db:"username"`
-	Email    string    `db:"email"`
-	Name     string    `db:"name"`
-	Type     string    `db:"type"`
+	Id           uuid.UUID `db:"id"`
+	UserId       uuid.UUID `db:"user_id"`
+	Username     string    `db:"username"`
+	Email        string    `db:"email"`
+	CategoryName string    `db:"name"`
+	CategoryType string    `db:"type"`
 }

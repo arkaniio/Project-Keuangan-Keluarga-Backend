@@ -33,17 +33,30 @@ func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
+		db_tx.Rollback()
 		return errors.New("Failed to adding the transaction!")
 	}
-	db_tx.Rollback()
 
 	query := `
-		INSERT INTO users(id, name, email, password, role, profile_img, created_at, updated_at)
+		INSERT INTO users(id, username, email, password, role, profile_img, created_at, updated_at)
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8);
 	`
 
-	if _, err := db_tx.ExecContext(ctx, query, user.Id, user.Name, user.Email, user.Password, user.Role, user.Profile_img, user.CreatedAt, user.UpdatedAt); err != nil {
+	result, err := db_tx.ExecContext(ctx, query, user.Id, user.Username, user.Email, user.Password, user.Role, user.Profile_img, user.CreatedAt, user.UpdatedAt)
+	if err != nil {
 		return errors.New("Failed to exec the context" + err.Error())
+	}
+
+	rows_affected, err := result.RowsAffected()
+	if err != nil {
+		return errors.New("Failed to get the rows affected!")
+	}
+	if rows_affected == 0 {
+		return errors.New("Failed to get the rows affected!")
+	}
+
+	if err := db_tx.Commit(); err != nil {
+		return errors.New("Failed to commit the transaction!")
 	}
 
 	return nil
@@ -52,7 +65,7 @@ func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 
 	query := `
-		SELECT id, name, email, password, role, profile_img, created_at, updated_at 
+		SELECT id, username, email, password, role, profile_img, created_at, updated_at 
 		FROM users WHERE email = $1;
 	`
 
@@ -71,7 +84,7 @@ func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error) {
 
 	query := `
-		SELECT id, name, email, password, role, profile_img, created_at, updated_at 
+		SELECT id, username, email, password, role, profile_img, created_at, updated_at 
 		FROM users WHERE id = $1;
 	`
 
@@ -91,9 +104,9 @@ func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload mod
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
+		db_tx.Rollback()
 		return errors.New("Failed to get and settings the transactions!")
 	}
-	db_tx.Rollback()
 
 	full_query, args, err := utils.UpdateToolsUser(payload, id)
 	if err != nil {

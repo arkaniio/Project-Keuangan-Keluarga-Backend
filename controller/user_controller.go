@@ -101,7 +101,7 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.GenerateJwt(users.Id, users.Email, users.Name, users.Role)
+	token, err := utils.GenerateJwt(users.Id, users.Email, users.Username, users.Role)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to generate token", err.Error())
 		return
@@ -222,7 +222,7 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	utils.PayloaUpdate(&paylod.Name, value_payload.Name)
+	utils.PayloaUpdate(&paylod.Username, value_payload.Name)
 	utils.PayloaUpdate(&paylod.Email, value_payload.Email)
 	utils.PayloaUpdate(&paylod.Password, value_payload.Password)
 	utils.PayloaUpdate(&paylod.Role, value_payload.Role)

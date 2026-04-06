@@ -72,6 +72,12 @@ func (c *ControllerHandlerTransaction) UpdateTransactions_Bp(w http.ResponseWrit
 		return
 	}
 
+	var transaction_id model.Transaction
+	if userId != transaction_id.UserId {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to update because you don't have access to update this transaction!", false)
+		return
+	}
+
 	if err := c.TransactionService.UpdateTransaction(ctx, userId, payload); err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, "Failed to update the transaction!", err.Error())
 		return

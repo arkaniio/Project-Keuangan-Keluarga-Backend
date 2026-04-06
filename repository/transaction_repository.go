@@ -37,9 +37,9 @@ func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
+		db_tx.Rollback()
 		return errors.New("Failed to setup the transactions settings!")
 	}
-	defer db_tx.Rollback()
 
 	query := `
 		INSERT INTO transactions(id, user_id, type, amount, category_id, description, date, created_at, updated_at) 
@@ -76,9 +76,9 @@ func (r *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, p
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
+		db_tx.Rollback()
 		return errors.New("Failed to get and settings the transactions!")
 	}
-	db_tx.Rollback()
 
 	full_query, args, err := utils.UpdateToolsTransactions(payload, id)
 	if err != nil {
