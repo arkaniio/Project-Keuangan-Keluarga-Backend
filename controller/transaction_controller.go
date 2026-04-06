@@ -292,3 +292,33 @@ func (c *ControllerHandlerTransaction) GetAvgExpenseMonth_Bp(w http.ResponseWrit
 	utils.ResponseSuccess(w, http.StatusOK, "Get avg expense p month has been successfully!", avg_expense_month_data)
 
 }
+
+func (c *ControllerHandlerTransaction) GetTransactionDataInExpenseType_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token from middleware!", err.Error())
+		return
+	}
+	if middleware_token == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token!", false)
+	}
+
+	type_transaction := r.URL.Query().Get("type")
+	if type_transaction == "" {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the type of transaction!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	transaction_data, err := c.TransactionService.GetTransactionDataInExpenseType(type_transaction, middleware_token, ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction data in expense type!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get transaction data in expense type has been successfully!", transaction_data)
+
+}

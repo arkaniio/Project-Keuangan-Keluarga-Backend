@@ -21,7 +21,7 @@ type TransactionService interface {
 	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error)
 	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
 	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
-	GetTransactionDataInExpenseType(type_transaction string, ctx context.Context) (*model.Transaction, error)
+	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 }
 
 type repoTransaction struct {
@@ -86,6 +86,6 @@ func (s *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.U
 	return s.repo.GetAvgExpenseMonth(ctx, user_id)
 }
 
-func (s *repoTransaction) GetTransactionDataInExpenseType(type_transaction string, ctx context.Context) (*model.Transaction, error) {
-	return s.repo.GetTransactionDataInExpenseType(type_transaction, ctx)
+func (s *repoTransaction) GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
+	return s.repo.GetTransactionDataInExpenseType(type_transaction, user_id, ctx)
 }

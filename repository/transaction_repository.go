@@ -23,7 +23,7 @@ type TransactionRepository interface {
 	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error)
 	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
 	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
-	GetTransactionDataInExpenseType(type_transaction string, ctx context.Context) (*model.Transaction, error)
+	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 }
 
 type repoTransaction struct {
@@ -369,10 +369,10 @@ func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.U
 
 }
 
-func (r *repoTransaction) GetTransactionDataInExpenseType(type_transaction string, ctx context.Context) (*model.Transaction, error) {
+func (r *repoTransaction) GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
 
 	query := `
-		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at FROM transactions WHERE type = $1;
+		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at FROM transactions WHERE type = $1 AND user_id = $2;
 	`
 
 	var transaction model.Transaction
