@@ -82,7 +82,7 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if users == nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Email not found", false)
+		utils.ResponseError(w, http.StatusBadRequest, "Email not found", nil)
 		return
 	}
 

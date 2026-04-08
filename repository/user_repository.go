@@ -66,7 +66,7 @@ func (r *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 
 	query := `
-		SELECT id, username, email, password, role, profile_img, created_at, updated_at 
+		SELECT id, username, email, password, role, COALESCE(profile_img, '') as profile_img, created_at, updated_at 
 		FROM users WHERE email = $1;
 	`
 
@@ -75,7 +75,7 @@ func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("Failed to get the email!")
+		return nil, fmt.Errorf("Failed to get the email!, %s", err.Error())
 	}
 
 	return &user, nil
@@ -85,7 +85,7 @@ func (r *repoUser) GetUserByEmail(email string) (*model.User, error) {
 func (r *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error) {
 
 	query := `
-		SELECT id, username, email, password, role, profile_img, created_at, updated_at 
+		SELECT id, username, email, password, role, COALESCE(profile_img, '') as profile_img, created_at, updated_at 
 		FROM users WHERE id = $1;
 	`
 
@@ -129,7 +129,7 @@ func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload mod
 func (r *repoUser) GetAllUser(ctx context.Context) ([]model.User, error) {
 
 	query := `
-		SELECT id, username, email, role, COALESCE(profile_img, '') as profile_img, created_at, updated_at 
+		SELECT id, username, email, password, role, COALESCE(profile_img, '') as profile_img, created_at, updated_at 
 		FROM users;
 	`
 
