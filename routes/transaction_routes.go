@@ -41,6 +41,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *
 	r.Get("/expense", transactionsCtrl.GetTransactionDataInExpenseType_Bp)
 	r.Get("/income", transactionsCtrl.GetTransactionDataInIncomeType_Bp)
 	r.Get("/expense-day-category", transactionsCtrl.GetAvgExpenseDayNameCategory_Bp)
+	r.Get("/income-day-category", transactionsCtrl.GetAvgIncomeDayNameCategory_Bp)
 
 	return r
 }

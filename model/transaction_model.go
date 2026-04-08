@@ -63,43 +63,43 @@ type PayloadTransactionDataCategory struct {
 }
 
 type AvgIncomeDay struct {
-	Day       string  `json:"day"`
-	AvgIncome float64 `json:"avg_income"`
+	Day       string  `db:"day"`
+	AvgIncome float64 `db:"avg_income"`
 }
 
 type AvgExpenseDay struct {
-	Day        string  `json:"day"`
-	AvgExpense float64 `json:"avg_expense"`
+	Day        string  `db:"day"`
+	AvgExpense float64 `db:"avg_expense"`
 }
 
 type AvgIncomeWeek struct {
-	Week      string  `json:"week"`
-	AvgIncome float64 `json:"income"`
+	Week      string  `db:"week"`
+	AvgIncome float64 `db:"income"`
 }
 
 type AvgExpenseWeek struct {
-	Week       string  `json:"week"`
-	AvgExpense float64 `json:"expense"`
+	Week       string  `db:"week"`
+	AvgExpense float64 `db:"expense"`
 }
 
 type AvgIncomeMonth struct {
-	Month     string  `json:"month"`
-	AvgIncome float64 `json:"income"`
+	Month     string  `db:"month"`
+	AvgIncome float64 `db:"income"`
 }
 
 type AvgExpenseMonth struct {
-	Month      string  `json:"month"`
-	AvgExpense float64 `json:"expense"`
+	Month      string  `db:"month"`
+	AvgExpense float64 `db:"expense"`
 }
 
 type AvgExpenseDayNameCategory struct {
-	Day        string  `json:"day"`
-	Name       string  `json:"name"`
-	AvgExpense float64 `json:"avg_expense"`
+	Day        string  `db:"day"`
+	Name       string  `db:"name"`
+	AvgExpense float64 `db:"avg_expense"`
 }
 
 type AvgIncomeDayNameCategory struct {
-	Day       string  `json:"day"`
-	Category  string  `json:"category"`
-	AvgIncome float64 `json:"avg_income"`
+	Day       string  `db:"day"`
+	Category  string  `db:"category"`
+	AvgIncome float64 `db:"avg_income"`
 }

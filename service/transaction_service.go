@@ -23,7 +23,8 @@ type TransactionService interface {
 	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error)
 	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
-	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDayNameCategory, error)
+	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
+	GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
 }
 
 type repoTransaction struct {
@@ -96,6 +97,10 @@ func (s *repoTransaction) GetTransactionDataInIncomeType(type_transaction string
 	return s.repo.GetTransactionDataInIncomeType(type_transaction, user_id, ctx)
 }
 
-func (s *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDayNameCategory, error) {
+func (s *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error) {
 	return s.repo.GetAvgExpenseDayNameCategory(ctx, user_id)
+}
+
+func (s *repoTransaction) GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error) {
+	return s.repo.GetAvgIncomeDayNameCategory(ctx, user_id)
 }
