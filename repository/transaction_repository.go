@@ -17,12 +17,12 @@ type TransactionRepository interface {
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
-	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
-	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
-	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error)
-	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error)
-	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
-	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
+	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error)
+	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error)
+	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error)
+	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error)
+	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error)
+	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error)
 	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDayNameCategory, error)
@@ -197,7 +197,7 @@ func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 
 }
 
-func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error) {
+func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error) {
 
 	query := `
 		SELECT DATE(date) as day,
@@ -208,25 +208,16 @@ func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID
 		ORDER BY day ASC;
 	`
 
-	var avg_income_data_day []model.AvgIncomeDay
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
-	if err != nil {
-		return nil, errors.New("Failed to get the income data svg!")
+	var data model.AvgIncomeDay
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the income data svg!" + err.Error())
 	}
 
-	for rows.Next() {
-		var income_data_struct model.AvgIncomeDay
-		if err := rows.StructScan(&income_data_struct); err != nil {
-			return nil, errors.New("Failed to get the income data struct from model!" + err.Error())
-		}
-		avg_income_data_day = append(avg_income_data_day, income_data_struct)
-	}
-
-	return avg_income_data_day, nil
+	return &data, nil
 
 }
 
-func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error) {
+func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error) {
 
 	query := `
 		SELECT DATE_TRUNC('day', date) as day
@@ -237,25 +228,16 @@ func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUI
 		GROUP BY day;
 	`
 
-	var avg_expense_array []model.AvgExpenseDay
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
-	if err != nil {
-		return nil, errors.New("Failed to detect some data in db!")
+	var data model.AvgExpenseDay
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the expense data svg!" + err.Error())
 	}
 
-	for rows.Next() {
-		var avg_expense_struct model.AvgExpenseDay
-		if err := rows.StructScan(avg_expense_struct); err != nil {
-			return nil, errors.New("Failed to scan the avg expense data!")
-		}
-		avg_expense_array = append(avg_expense_array, avg_expense_struct)
-	}
-
-	return avg_expense_array, nil
+	return &data, nil
 
 }
 
-func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error) {
+func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error) {
 
 	query := `
 		SELECT DATE_TRUNC('week', date) as week
@@ -266,25 +248,15 @@ func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUI
 		GROUP BY week
 	`
 
-	var avg_income_week []model.AvgIncomeWeek
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
-	if err != nil {
-		return nil, errors.New("Failed to get the avg income week!")
+	var data model.AvgIncomeWeek
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the avg income week!" + err.Error())
 	}
 
-	for rows.Next() {
-		var avg_income_week_struct model.AvgIncomeWeek
-		if err := rows.StructScan(avg_income_week_struct); err != nil {
-			return nil, errors.New("Failed to get the avg_income_week!")
-		}
-		avg_income_week = append(avg_income_week, avg_income_week_struct)
-	}
-
-	return avg_income_week, nil
-
+	return &data, nil
 }
 
-func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error) {
+func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error) {
 
 	query := `
 		SELECT DATE_TRUNC('week', date) as week
@@ -295,25 +267,15 @@ func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UU
 		GROUP BY week
 	`
 
-	var avg_expense_week []model.AvgExpenseWeek
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
-	if err != nil {
-		return nil, errors.New("Failed to get the avg expense week!")
+	var data model.AvgExpenseWeek
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the avg expense week!" + err.Error())
 	}
 
-	for rows.Next() {
-		var avg_expense_week_struct model.AvgExpenseWeek
-		if err := rows.StructScan(avg_expense_week_struct); err != nil {
-			return nil, errors.New("Failed to get the avg_expense_week!")
-		}
-		avg_expense_week = append(avg_expense_week, avg_expense_week_struct)
-	}
-
-	return avg_expense_week, nil
-
+	return &data, nil
 }
 
-func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error) {
+func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error) {
 
 	query := `
 		SELECT DATE_TRUNC('month', date) as month
@@ -324,25 +286,15 @@ func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UU
 		GROUP BY month
 	`
 
-	var avg_income_month []model.AvgIncomeMonth
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
-	if err != nil {
-		return nil, errors.New("Failed to get the avg income month!")
+	var data model.AvgIncomeMonth
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the avg income month!" + err.Error())
 	}
 
-	for rows.Next() {
-		var avg_income_month_struct model.AvgIncomeMonth
-		if err := rows.StructScan(avg_income_month_struct); err != nil {
-			return nil, errors.New("Failed to get the avg_income_month!")
-		}
-		avg_income_month = append(avg_income_month, avg_income_month_struct)
-	}
-
-	return avg_income_month, nil
-
+	return &data, nil
 }
 
-func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error) {
+func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error) {
 
 	query := `
 		SELECT DATE_TRUNC('month', date) as month
@@ -353,22 +305,12 @@ func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.U
 		GROUP BY month
 	`
 
-	var avg_expense_month []model.AvgExpenseMonth
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
-	if err != nil {
-		return nil, errors.New("Failed to get the avg expense month!")
+	var data model.AvgExpenseMonth
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the avg expense month!" + err.Error())
 	}
 
-	for rows.Next() {
-		var avg_expense_month_struct model.AvgExpenseMonth
-		if err := rows.StructScan(avg_expense_month_struct); err != nil {
-			return nil, errors.New("Failed to get the avg_expense_month!")
-		}
-		avg_expense_month = append(avg_expense_month, avg_expense_month_struct)
-	}
-
-	return avg_expense_month, nil
-
+	return &data, nil
 }
 
 func (r *repoTransaction) GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {

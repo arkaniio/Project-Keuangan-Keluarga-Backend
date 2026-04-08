@@ -15,12 +15,12 @@ type TransactionService interface {
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
-	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error)
-	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error)
-	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error)
-	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error)
-	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
-	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
+	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error)
+	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error)
+	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error)
+	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error)
+	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error)
+	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error)
 	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDayNameCategory, error)
@@ -64,27 +64,27 @@ func (s *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 	}, nil
 }
 
-func (s *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeDay, error) {
+func (s *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error) {
 	return s.repo.GetAvgIncomeDay(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDay, error) {
+func (s *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error) {
 	return s.repo.GetAvgExpenseDay(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeWeek, error) {
+func (s *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error) {
 	return s.repo.GetAvgIncomeWeek(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseWeek, error) {
+func (s *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error) {
 	return s.repo.GetAvgExpenseWeek(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error) {
+func (s *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error) {
 	return s.repo.GetAvgIncomeMonth(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error) {
+func (s *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error) {
 	return s.repo.GetAvgExpenseMonth(ctx, user_id)
 }
 
