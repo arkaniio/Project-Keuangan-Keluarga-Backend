@@ -91,3 +91,15 @@ type AvgExpenseMonth struct {
 	Month      string  `json:"month"`
 	AvgExpense float64 `json:"expense"`
 }
+
+type AvgExpenseDayNameCategory struct {
+	Day        string  `json:"day"`
+	Name       string  `json:"name"`
+	AvgExpense float64 `json:"avg_expense"`
+}
+
+type AvgIncomeDayNameCategory struct {
+	Day       string  `json:"day"`
+	Category  string  `json:"category"`
+	AvgIncome float64 `json:"avg_income"`
+}

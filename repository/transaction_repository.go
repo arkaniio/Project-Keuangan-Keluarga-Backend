@@ -25,6 +25,7 @@ type TransactionRepository interface {
 	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
 	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
+	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDayNameCategory, error)
 }
 
 type repoTransaction struct {
@@ -398,5 +399,36 @@ func (r *repoTransaction) GetTransactionDataInIncomeType(type_transaction string
 	}
 
 	return &transaction, nil
+
+}
+
+func (r *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseDayNameCategory, error) {
+
+	query := `
+		SELECT DATE_TRUNC('day', t.date) as day 
+		c.name as category
+		AVG(t.amount) as avg_amount
+		FROM transactions t
+		JOIN categories c ON t.category_id = c.id
+		WHERE t.user_id = $1 AND t.type = 'expense'
+		GROUP BY day
+		ORDER BY day DESC
+	`
+
+	var data []model.AvgExpenseDayNameCategory
+	rows, err := r.db.QueryxContext(ctx, query)
+	if err != nil {
+		return nil, errors.New("Failed to get the data from db using query!")
+	}
+
+	for rows.Next() {
+		var data_struct model.AvgExpenseDayNameCategory
+		if err := rows.StructScan(data_struct); err != nil {
+			return nil, errors.New("Failed to get the data struct from db!")
+		}
+		data = append(data, data_struct)
+	}
+
+	return data, nil
 
 }
