@@ -216,8 +216,8 @@ func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID
 
 	for rows.Next() {
 		var income_data_struct model.AvgIncomeDay
-		if err := rows.StructScan(income_data_struct); err != nil {
-			return nil, errors.New("Failed to get the income data struct from model!")
+		if err := rows.StructScan(&income_data_struct); err != nil {
+			return nil, errors.New("Failed to get the income data struct from model!" + err.Error())
 		}
 		avg_income_data_day = append(avg_income_data_day, income_data_struct)
 	}
