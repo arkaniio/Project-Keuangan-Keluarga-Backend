@@ -35,6 +35,7 @@ func UserRoutes(userCtrl *controller.ControllerHandler) *chi.Mux {
 		r.Get("/profile", userCtrl.GetProfile)
 		r.Put("/update", userCtrl.UpdateUser)
 	})
+	r.Get("/all", userCtrl.GetAllUser)
 
 	return r
 }

@@ -18,6 +18,7 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*model.User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
 	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.UpdatePayloadUser) error
+	GetAllUser(ctx context.Context) ([]model.User, error)
 }
 
 type repoUser struct {
@@ -122,5 +123,21 @@ func (r *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload mod
 	}
 
 	return nil
+
+}
+
+func (r *repoUser) GetAllUser(ctx context.Context) ([]model.User, error) {
+
+	query := `
+		SELECT id, username, email, role, profile_img, created_at, updated_at 
+		FROM users;
+	`
+
+	var users []model.User
+	if err := r.db.SelectContext(ctx, &users, query); err != nil {
+		return nil, fmt.Errorf("Failed to get the data user! %s", err.Error())
+	}
+
+	return users, nil
 
 }

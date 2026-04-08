@@ -14,6 +14,7 @@ type UserService interface {
 	GetUserByEmail(email string) (*model.User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (*model.User, error)
 	UpdateDataUser(id uuid.UUID, ctx context.Context, user model.UpdatePayloadUser) error
+	GetAllUser(ctx context.Context) ([]model.User, error)
 }
 
 type repoUser struct {
@@ -38,4 +39,8 @@ func (s *repoUser) GetUserById(ctx context.Context, id uuid.UUID) (*model.User, 
 
 func (s *repoUser) UpdateDataUser(id uuid.UUID, ctx context.Context, payload model.UpdatePayloadUser) error {
 	return s.repo.UpdateDataUser(id, ctx, payload)
+}
+
+func (s *repoUser) GetAllUser(ctx context.Context) ([]model.User, error) {
+	return s.repo.GetAllUser(ctx)
 }

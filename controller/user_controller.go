@@ -228,3 +228,22 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	utils.ResponseSuccess(w, http.StatusOK, "Success to update the user data!", nil)
 
 }
+
+func (s *ControllerHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	users, err := s.service.GetAllUser(ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user data!", err.Error())
+		return
+	}
+	if users == nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user data!", false)
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Success to get the user data!", users)
+
+}
