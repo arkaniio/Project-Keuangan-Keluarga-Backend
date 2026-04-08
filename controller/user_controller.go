@@ -30,11 +30,6 @@ func (s *ControllerHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := utils.IsValidEmail(payloads.Email); err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate email", err.Error())
-		return
-	}
-
 	if err := utils.ValidatePayloads(payloads); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate JSON", err.Error())
 		return
@@ -78,11 +73,6 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err := utils.ValidatePayloads(payloadsLogin); err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate JSON", err.Error())
-		return
-	}
-
-	if err := utils.IsValidEmail(payloadsLogin.Email); err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate email", err.Error())
 		return
 	}
 

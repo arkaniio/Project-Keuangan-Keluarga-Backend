@@ -22,7 +22,7 @@ type User struct {
 type Payload struct {
 	Id          uuid.UUID `json:"id"`
 	Username    string    `json:"username" validate:"required"`
-	Email       string    `json:"email" validate:"required,email"`
+	Email       string    `json:"email" validate:"required"`
 	Password    string    `json:"password" validate:"required"`
 	Role        string    `json:"role" validate:"required"`
 	Profile_img string    `json:"profile_img"`
@@ -31,7 +31,7 @@ type Payload struct {
 }
 
 type LoginPayload struct {
-	Email    string `json:"email" validate:"required,email"`
+	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
