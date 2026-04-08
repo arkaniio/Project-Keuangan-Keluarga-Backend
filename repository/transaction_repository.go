@@ -24,6 +24,7 @@ type TransactionRepository interface {
 	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgIncomeMonth, error)
 	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) ([]model.AvgExpenseMonth, error)
 	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
+	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 }
 
 type repoTransaction struct {
@@ -373,6 +374,22 @@ func (r *repoTransaction) GetTransactionDataInExpenseType(type_transaction strin
 
 	query := `
 		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at FROM transactions WHERE type = $1 AND user_id = $2;
+	`
+
+	var transaction model.Transaction
+	if err := r.db.GetContext(ctx, &transaction, query, type_transaction); err != nil {
+		return nil, errors.New("Failed to get the transaction!")
+	}
+
+	return &transaction, nil
+
+}
+
+func (r *repoTransaction) GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
+
+	query := `
+		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at 
+		FROM transactions WHERE type = $1;
 	`
 
 	var transaction model.Transaction
