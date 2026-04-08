@@ -322,3 +322,33 @@ func (c *ControllerHandlerTransaction) GetTransactionDataInExpenseType_Bp(w http
 	utils.ResponseSuccess(w, http.StatusOK, "Get transaction data in expense type has been successfully!", transaction_data)
 
 }
+
+func (c *ControllerHandlerTransaction) GetTransactionDataInIncomeType_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token from middleware!", err.Error())
+		return
+	}
+	if middleware_token == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token!", false)
+	}
+
+	type_transaction := r.URL.Query().Get("type")
+	if type_transaction == "" {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the type of transaction!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	transaction_data, err := c.TransactionService.GetTransactionDataInIncomeType(type_transaction, middleware_token, ctx)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction data in income type!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Get transaction data in income type has been successfully!", transaction_data)
+
+}
