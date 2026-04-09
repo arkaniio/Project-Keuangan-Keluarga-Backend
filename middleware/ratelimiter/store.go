@@ -53,10 +53,10 @@ func (ms *MemoryStore) Increment(key string, window time.Duration) (prevCount in
 	now := time.Now()
 	entry, exists := ms.entries[key]
 
+	//if the users is not exist
 	if !exists {
-		// First request for this key
 		ws := now.Truncate(window)
-		entry = &windowEntry{
+		entry := &windowEntry{
 			prevCount:   0,
 			currCount:   1,
 			windowStart: ws,
