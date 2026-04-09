@@ -9,16 +9,19 @@ import (
 
 	"project-keuangan-keluarga/controller"
 	"project-keuangan-keluarga/middleware"
+	"project-keuangan-keluarga/middleware/ratelimiter"
 )
 
-func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction) *chi.Mux {
+// KeuanganRoutes creates the chi router for transaction-related endpoints.
+func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction, generalLimiter *ratelimiter.Limiter) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global middleware
-	r.Use(middleware.Logger)         // custom structured JSON logger
-	r.Use(middleware.MiddlewareAuth) // use
-	r.Use(chimw.Recoverer)           // recover from panics
-	r.Use(chimw.RequestID)           // inject X-Request-Id header
+	r.Use(middleware.Logger)                              // custom structured JSON logger
+	r.Use(middleware.MiddlewareAuth)                      // auth required
+	r.Use(chimw.Recoverer)                                // recover from panics
+	r.Use(chimw.RequestID)                                // inject X-Request-Id header
+	r.Use(middleware.RateLimitMiddleware(generalLimiter))  // general rate limit: 60 req/min
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {

@@ -11,6 +11,7 @@ import (
 
 	"project-keuangan-keluarga/config"
 	"project-keuangan-keluarga/controller"
+	"project-keuangan-keluarga/middleware/ratelimiter"
 	"project-keuangan-keluarga/repository"
 	"project-keuangan-keluarga/routes"
 	"project-keuangan-keluarga/service"
@@ -32,7 +33,24 @@ func main() {
 	}
 	defer db.Close()
 
-	// ── 2. Dependency Injection ──────────────────────────────────
+	// ── 2. Rate Limiter ─────────────────────────────────────────
+	// In-memory store with cleanup every 2 minutes
+	store := ratelimiter.NewMemoryStore(2 * time.Minute)
+	defer store.Stop()
+
+	// General limiter — 60 req/min (configurable via env)
+	generalCfg := ratelimiter.LoadFromEnv()
+	generalLimiter := ratelimiter.NewLimiter(generalCfg, store)
+	log.Printf("[RATE-LIMIT] General: %d req/%s, burst=%d",
+		generalCfg.Rate, generalCfg.Window, generalCfg.BurstCapacity)
+
+	// Strict limiter — 10 req/min for auth endpoints (configurable via env)
+	strictCfg := ratelimiter.LoadStrictFromEnv()
+	strictLimiter := ratelimiter.NewLimiter(strictCfg, store)
+	log.Printf("[RATE-LIMIT] Strict: %d req/%s, burst=%d",
+		strictCfg.Rate, strictCfg.Window, strictCfg.BurstCapacity)
+
+	// ── 3. Dependency Injection ──────────────────────────────────
 	userRepo := repository.NewExampleRepository(db)
 	userSvc := service.NewUserService(userRepo)
 	userCtrl := controller.NewUserController(userSvc)
@@ -47,18 +65,18 @@ func main() {
 	transactionSvc := service.NewTransactionService(transactionRepo)
 	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
 
-	// ── 3. Routes ────────────────────────────────────────────────
+	// ── 4. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
 	subRoiter := route.With()
-	router := routes.UserRoutes(userCtrl)
-	router_category := routes.CategoryRoutes(categoryCtrl)
-	router_transaction := routes.KeuanganRoutes(transactionCtrl)
+	router := routes.UserRoutes(userCtrl, generalLimiter, strictLimiter)
+	router_category := routes.CategoryRoutes(categoryCtrl, generalLimiter)
+	router_transaction := routes.KeuanganRoutes(transactionCtrl, generalLimiter)
 
 	subRoiter.Mount("/api/v1/users", router)
 	subRoiter.Mount("/api/v1/categories", router_category)
 	subRoiter.Mount("/api/v1/transactions", router_transaction)
 
-	// ── 4. HTTP Server ───────────────────────────────────────────
+	// ── 5. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{
 		Addr:         ":8080",
 		Handler:      route,
@@ -67,7 +85,7 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// ── 5. Graceful Shutdown ─────────────────────────────────────
+	// ── 6. Graceful Shutdown ─────────────────────────────────────
 	go func() {
 		log.Println("[SERVER] Listening on http://localhost:8080")
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

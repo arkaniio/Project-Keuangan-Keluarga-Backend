@@ -9,16 +9,20 @@ import (
 
 	"project-keuangan-keluarga/controller"
 	"project-keuangan-keluarga/middleware"
+	"project-keuangan-keluarga/middleware/ratelimiter"
 )
 
-// Setup creates the chi router, registers middleware, and mounts all routes.
-func UserRoutes(userCtrl *controller.ControllerHandler) *chi.Mux {
+// UserRoutes creates the chi router for user-related endpoints.
+// It accepts both a general limiter (for all routes) and a strict limiter
+// (for auth-sensitive endpoints like login and register).
+func UserRoutes(userCtrl *controller.ControllerHandler, generalLimiter *ratelimiter.Limiter, strictLimiter *ratelimiter.Limiter) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global middleware
-	r.Use(middleware.Logger) // custom structured JSON logger
-	r.Use(chimw.Recoverer)   // recover from panics
-	r.Use(chimw.RequestID)   // inject X-Request-Id header
+	r.Use(middleware.Logger)                              // custom structured JSON logger
+	r.Use(chimw.Recoverer)                                // recover from panics
+	r.Use(chimw.RequestID)                                // inject X-Request-Id header
+	r.Use(middleware.RateLimitMiddleware(generalLimiter))  // general rate limit: 60 req/min
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -27,14 +31,20 @@ func UserRoutes(userCtrl *controller.ControllerHandler) *chi.Mux {
 		json.NewEncoder(w).Encode(map[string]string{"message": "pong"})
 	})
 
-	// API v1 routes
-	r.Post("/register", userCtrl.Register)
-	r.Post("/login", userCtrl.Login)
+	// Auth routes with stricter rate limiting (10 req/min)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.RateLimitMiddleware(strictLimiter))
+		r.Post("/register", userCtrl.Register)
+		r.Post("/login", userCtrl.Login)
+	})
+
+	// Protected routes (require authentication)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.MiddlewareAuth)
 		r.Get("/profile", userCtrl.GetProfile)
 		r.Put("/update", userCtrl.UpdateUser)
 	})
+
 	r.Get("/all", userCtrl.GetAllUser)
 
 	return r
