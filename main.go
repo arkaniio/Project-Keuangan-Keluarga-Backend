@@ -65,16 +65,23 @@ func main() {
 	transactionSvc := service.NewTransactionService(transactionRepo)
 	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
 
+	//budget injection
+	budgetRepo := repository.NewBudgetRepository(db)
+	budgetSvc := service.NewBudgetService(budgetRepo)
+	budgetCtrl := controller.NewBudgetController(budgetSvc)
+
 	// ── 4. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
 	subRoiter := route.With()
 	router := routes.UserRoutes(userCtrl, generalLimiter, strictLimiter)
 	router_category := routes.CategoryRoutes(categoryCtrl, generalLimiter)
 	router_transaction := routes.KeuanganRoutes(transactionCtrl, generalLimiter)
+	router_budget := routes.BudgetRoutes(budgetCtrl, generalLimiter)
 
 	subRoiter.Mount("/api/v1/users", router)
 	subRoiter.Mount("/api/v1/categories", router_category)
 	subRoiter.Mount("/api/v1/transactions", router_transaction)
+	subRoiter.Mount("/api/v1/budgets", router_budget)
 
 	// ── 5. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{
