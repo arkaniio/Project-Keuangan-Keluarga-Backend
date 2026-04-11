@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
 	"project-keuangan-keluarga/utils"
@@ -25,34 +26,66 @@ type TransactionService interface {
 	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
 	GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
+	GetTotalExpenseByCategory(ctx context.Context, user_id uuid.UUID, category_id uuid.UUID) (int64, error)
 }
 
-type repoTransaction struct {
-	repo repository.TransactionRepository
+type repoTransactionCombine struct {
+	repoTransaction repository.TransactionRepository
+	repoBudget      repository.BudgetRepository
 }
 
-func NewTransactionService(repo repository.TransactionRepository) TransactionService {
-	return &repoTransaction{repo: repo}
+func NewTransactionService(repoTransaction repository.TransactionRepository, repoBudget repository.BudgetRepository) TransactionService {
+	return &repoTransactionCombine{repoTransaction: repoTransaction, repoBudget: repoBudget}
 }
 
-func (s *repoTransaction) CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error {
-	return s.repo.CreateNewTransactions(ctx, transactions)
+func (s *repoTransactionCombine) CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error {
+
+	if transactions.Type != "income" && transactions.Type != "expense" {
+		return errors.New("Failed to detect for a type, invalid type!")
+	}
+
+	if transactions.Type == "expense" {
+		budget_data, err := s.repoBudget.GetActiveBudget(ctx, transactions.UserId)
+		if err != nil {
+			return errors.New("Failed to get the budget data")
+		}
+		transactions_total_amount, err := s.repoTransaction.GetTotalExpenseByCategory(ctx, transactions.UserId, transactions.CategoryId)
+		if err != nil {
+			return errors.New("Failed to get the transactions total for expense!")
+		}
+
+		total_amount := transactions_total_amount + transactions.Amount
+		if total_amount >= budget_data.Limit_amount {
+			return errors.New("total amount must be lower than limit amount")
+		}
+	}
+
+	if err := s.repoTransaction.CreateNewTransactions(ctx, transactions); err != nil {
+		return errors.New("Failed to create new transactions!")
+	}
+
+	return nil
+
 }
 
-func (s *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error {
-	return s.repo.UpdateTransaction(ctx, id, payload)
+func (s *repoTransactionCombine) GetTotalExpenseByCategory(ctx context.Context, user_id uuid.UUID, category_id uuid.UUID) (int64, error) {
+	return s.repoTransaction.GetTotalExpenseByCategory(ctx, user_id, category_id)
 }
 
-func (s *repoTransaction) DeleteTransaction(ctx context.Context, id uuid.UUID) error {
-	return s.repo.DeleteTransaction(ctx, id)
+func (s *repoTransactionCombine) UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error {
+	return s.repoTransaction.UpdateTransaction(ctx, id, payload)
 }
 
-func (s *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error) {
-	return s.repo.GetTransactionById(ctx, id)
+func (s *repoTransactionCombine) DeleteTransaction(ctx context.Context, id uuid.UUID) error {
+	return s.repoTransaction.DeleteTransaction(ctx, id)
 }
 
-func (s *repoTransaction) GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error) {
-	items, totalItems, err := s.repo.GetAllTransaction(ctx, params)
+func (s *repoTransactionCombine) GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error) {
+	return s.repoTransaction.GetTransactionById(ctx, id)
+}
+
+func (s *repoTransactionCombine) GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error) {
+	items, totalItems, err := s.repoTransaction.GetAllTransaction(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -65,42 +98,42 @@ func (s *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 	}, nil
 }
 
-func (s *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error) {
-	return s.repo.GetAvgIncomeDay(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error) {
+	return s.repoTransaction.GetAvgIncomeDay(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error) {
-	return s.repo.GetAvgExpenseDay(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error) {
+	return s.repoTransaction.GetAvgExpenseDay(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error) {
-	return s.repo.GetAvgIncomeWeek(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error) {
+	return s.repoTransaction.GetAvgIncomeWeek(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error) {
-	return s.repo.GetAvgExpenseWeek(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error) {
+	return s.repoTransaction.GetAvgExpenseWeek(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error) {
-	return s.repo.GetAvgIncomeMonth(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error) {
+	return s.repoTransaction.GetAvgIncomeMonth(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error) {
-	return s.repo.GetAvgExpenseMonth(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error) {
+	return s.repoTransaction.GetAvgExpenseMonth(ctx, user_id)
 }
 
-func (s *repoTransaction) GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
-	return s.repo.GetTransactionDataInExpenseType(type_transaction, user_id, ctx)
+func (s *repoTransactionCombine) GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
+	return s.repoTransaction.GetTransactionDataInExpenseType(type_transaction, user_id, ctx)
 }
 
-func (s *repoTransaction) GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
-	return s.repo.GetTransactionDataInIncomeType(type_transaction, user_id, ctx)
+func (s *repoTransactionCombine) GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error) {
+	return s.repoTransaction.GetTransactionDataInIncomeType(type_transaction, user_id, ctx)
 }
 
-func (s *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error) {
-	return s.repo.GetAvgExpenseDayNameCategory(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error) {
+	return s.repoTransaction.GetAvgExpenseDayNameCategory(ctx, user_id)
 }
 
-func (s *repoTransaction) GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error) {
-	return s.repo.GetAvgIncomeDayNameCategory(ctx, user_id)
+func (s *repoTransactionCombine) GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error) {
+	return s.repoTransaction.GetAvgIncomeDayNameCategory(ctx, user_id)
 }

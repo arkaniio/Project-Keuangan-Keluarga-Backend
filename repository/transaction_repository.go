@@ -27,6 +27,7 @@ type TransactionRepository interface {
 	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
 	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
 	GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
+	GetTotalExpenseByCategory(ctx context.Context, user_id uuid.UUID, category_id uuid.UUID) (int64, error)
 }
 
 type repoTransaction struct {
@@ -74,6 +75,19 @@ func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 
 	return nil
 
+}
+
+func (r *repoTransaction) GetTotalExpenseByCategory(ctx context.Context, userID, categoryID uuid.UUID) (int64, error) {
+	query := `
+		SELECT COALESCE(SUM(amount), 0)
+		FROM transactions
+		WHERE user_id = $1
+		AND category_id = $2
+		AND type = 'expense'
+	`
+	var total int64
+	err := r.db.GetContext(ctx, &total, query, userID, categoryID)
+	return total, err
 }
 
 func (r *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error {

@@ -13,6 +13,9 @@ import (
 type BudgetRepository interface {
 	CreateNewBudget(ctx context.Context, payload *model.Budget) error
 	UpdateBudget(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadBudget) error
+	GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Budget, error)
+	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
+	GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 }
 
 type repoBudget struct {
@@ -56,5 +59,56 @@ func (r *repoBudget) UpdateBudget(ctx context.Context, id uuid.UUID, payload mod
 	}
 
 	return nil
+
+}
+
+func (r *repoBudget) GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Budget, error) {
+
+	query := `
+		SELECT id, user_id, category_id, limit_amount, period, start_date, end_date, is_active
+		FROM budgets
+		WHERE id = $1
+	`
+
+	var budget model.Budget
+	if err := r.db.GetContext(ctx, &budget, query, id); err != nil {
+		return nil, err
+	}
+
+	return &budget, nil
+
+}
+
+func (r *repoBudget) GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error) {
+
+	query := `
+		SELECT id, user_id, category_id, limit_amount, period, start_date, end_date, is_active
+		FROM budgets
+		WHERE user_id = $1
+	`
+
+	var budget model.Budget
+	if err := r.db.GetContext(ctx, &budget, query, user_id); err != nil {
+		return nil, err
+	}
+
+	return &budget, nil
+
+}
+
+func (r *repoBudget) GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error) {
+
+	query := `
+		SELECT id, user_id, category_id, limit_amount, period, start_date, end_date, is_active
+		FROM budgets
+		WHERE user_id = $1 AND is_active = true
+	`
+
+	var budget model.Budget
+	if err := r.db.GetContext(ctx, &budget, query, user_id); err != nil {
+		return nil, err
+	}
+
+	return &budget, nil
 
 }
