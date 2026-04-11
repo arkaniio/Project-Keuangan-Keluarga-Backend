@@ -32,6 +32,7 @@ func BudgetRoutes(bgt_controller *controller.BudgetController, generalLimiter *r
 
 	// API v1 routes
 	r.Post("/", bgt_controller.CreateNewBudget_Bp)
+	r.Put("/update", bgt_controller.UpdateBudget_Bp)
 
 	return r
 }

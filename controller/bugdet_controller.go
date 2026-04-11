@@ -60,3 +60,33 @@ func (c *BudgetController) CreateNewBudget_Bp(w http.ResponseWriter, r *http.Req
 	utils.ResponseSuccess(w, http.StatusBadRequest, "Success to create new budget data!", true)
 
 }
+
+func (c *BudgetController) UpdateBudget_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the id from middleware!", err.Error())
+		return
+	}
+	if middleware_token == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the uuid!", false)
+		return
+	}
+
+	var payload model.UpdatePayloadBudget
+	if err := utils.DecodeJson(r, &payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode the payload budget!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	if err := c.budgetService.UpdateBudget(ctx, middleware_token, payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to update budget per user!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusBadRequest, "Success to update budget data!", true)
+
+}
