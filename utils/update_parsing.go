@@ -102,6 +102,33 @@ func UpdateToolsTransactions(payload model.UpdatePayloadTransaction, id uuid.UUI
 	return buildUpdateQuery("transactions", fields, id)
 }
 
+func UpdateToolsBudget(payload model.UpdatePayloadBudget, id uuid.UUID) (string, []interface{}, error) {
+
+	field := []fieldMapping{
+		{
+			Column: "category_id", Value: valOrNil(payload.Category_Id), IsSet: payload.Category_Id != nil,
+		},
+		{
+			Column: "limit_amount", Value: valOrNil(payload.Limit_amount), IsSet: payload.Limit_amount != nil,
+		},
+		{
+			Column: "period", Value: valOrNil(payload.Period), IsSet: payload.Period != nil,
+		},
+		{
+			Column: "start_date", Value: valOrNil(payload.StartDate), IsSet: payload.StartDate != nil,
+		},
+		{
+			Column: "end_date", Value: valOrNil(payload.EndDate), IsSet: payload.EndDate != nil,
+		},
+		{
+			Column: "is_active", Value: valOrNil(payload.IsActive), IsSet: payload.IsActive != nil,
+		},
+	}
+
+	return buildUpdateQuery("budgets", field, id)
+
+}
+
 func UpdateToolsUser(payload model.UpdatePayloadUser, id uuid.UUID) (string, []interface{}, error) {
 
 	if payload.Email != nil {
