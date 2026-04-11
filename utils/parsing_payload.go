@@ -47,6 +47,27 @@ func ParsingPayloadTransaction(payload model.PayloadTransaction, userId uuid.UUI
 	}, nil
 }
 
+func ParsingPayloadBudget(payload model.PayloadBudget, userId uuid.UUID) (*model.Budget, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.Budget{
+		Id:           uuid.New(),
+		UserId:       userId,
+		Category_Id:  payload.Category_Id,
+		Limit_amount: payload.Limit_amount,
+		Period:       payload.Period,
+		StartDate:    payload.StartDate,
+		EndDate:      payload.EndDate,
+		IsActive:     payload.IsActive,
+		Created_at:   time.Now().UTC(),
+		Updated_at:   time.Now().UTC(),
+	}, nil
+
+}
+
 func ParsingPayloadCategory(payload model.PayloadCategory, userId uuid.UUID) (*model.Category, error) {
 
 	if userId == uuid.Nil {

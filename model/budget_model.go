@@ -20,12 +20,12 @@ type Budget struct {
 }
 
 type PayloadBudget struct {
-	Category_Id  uuid.UUID `json:"category_id"`
-	Limit_amount int64     `json:"limit_amount"`
-	Period       string    `json:"period"`
-	StartDate    time.Time `json:"start_date"`
-	EndDate      time.Time `json:"end_date"`
-	IsActive     bool      `json:"is_active"`
+	Category_Id  uuid.UUID `json:"category_id" validate:"required"`
+	Limit_amount int64     `json:"limit_amount" validate:"required"`
+	Period       string    `json:"period" validate:"required"`
+	StartDate    time.Time `json:"start_date" validate:"required"`
+	EndDate      time.Time `json:"end_date" validate:"required"`
+	IsActive     bool      `json:"is_active" validate:"required"`
 }
 
 type UpdatePayloadBudget struct {
