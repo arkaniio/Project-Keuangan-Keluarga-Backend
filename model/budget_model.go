@@ -1,0 +1,39 @@
+package model
+
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type Budget struct {
+	Id           uuid.UUID `db:"id"`
+	UserId       uuid.UUID `db:"user_id"`
+	Category_Id  uuid.UUID `db:"category_id"`
+	Limit_amount int64     `db:"limit_amount"`
+	Period       string    `db:"period"`
+	StartDate    time.Time `db:"start_date"`
+	EndDate      time.Time `db:"end_date"`
+	IsActive     bool      `db:"is_active"`
+	Created_at   time.Time `db:"created_at"`
+	Updated_at   time.Time `db:"updated_at"`
+}
+
+type PayloadBudget struct {
+	Category_Id  uuid.UUID `json:"category_id"`
+	Limit_amount int64     `json:"limit_amount"`
+	Period       string    `json:"period"`
+	StartDate    time.Time `json:"start_date"`
+	EndDate      time.Time `json:"end_date"`
+	IsActive     bool      `json:"is_active"`
+}
+
+type UpdatePayloadBudget struct {
+	Id           uuid.UUID  `json:"id"`
+	Category_Id  *uuid.UUID `json:"category_id"`
+	Limit_amount *int64     `json:"limit_amount"`
+	Period       *string    `json:"period"`
+	StartDate    *time.Time `json:"start_date"`
+	EndDate      *time.Time `json:"end_date"`
+	IsActive     *bool      `json:"is_active"`
+}
