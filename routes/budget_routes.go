@@ -13,7 +13,7 @@ import (
 )
 
 // CategoryRoutes creates the chi router for category-related endpoints.
-func BudgetRoutes(bgt_controller *controller.BudgetController, generalLimiter *ratelimiter.Limiter) *chi.Mux {
+func BudgetRoutes(bgt_controller *controller.ControllerBudget, generalLimiter *ratelimiter.Limiter) *chi.Mux {
 	r := chi.NewRouter()
 
 	// Global middleware
@@ -33,6 +33,7 @@ func BudgetRoutes(bgt_controller *controller.BudgetController, generalLimiter *r
 	// API v1 routes
 	r.Post("/", bgt_controller.CreateNewBudget_Bp)
 	r.Put("/update", bgt_controller.UpdateBudget_Bp)
+	r.Delete("/:id", bgt_controller.DeleteBudget_Bp)
 
 	return r
 }
