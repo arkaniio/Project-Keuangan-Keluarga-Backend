@@ -28,6 +28,12 @@ type TransactionRepository interface {
 	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
 	GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
 	GetTotalExpenseByCategory(ctx context.Context, user_id uuid.UUID, category_id uuid.UUID) (int64, error)
+	GetTotalExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseDay, error)
+	GetTotalExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseWeek, error)
+	GetTotalExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseMonth, error)
+	GetTotalIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeDay, error)
+	GetTotalIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeWeek, error)
+	GetTotalIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeMonth, error)
 }
 
 type repoTransaction struct {

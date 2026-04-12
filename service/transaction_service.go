@@ -27,6 +27,12 @@ type TransactionService interface {
 	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
 	GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
 	GetTotalExpenseByCategory(ctx context.Context, user_id uuid.UUID, category_id uuid.UUID) (int64, error)
+	GetTotalExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseDay, error)
+	GetTotalExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseWeek, error)
+	GetTotalExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseMonth, error)
+	GetTotalIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeDay, error)
+	GetTotalIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeWeek, error)
+	GetTotalIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeMonth, error)
 }
 
 type repoTransactionCombine struct {
@@ -136,4 +142,28 @@ func (s *repoTransactionCombine) GetAvgExpenseDayNameCategory(ctx context.Contex
 
 func (s *repoTransactionCombine) GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error) {
 	return s.repoTransaction.GetAvgIncomeDayNameCategory(ctx, user_id)
+}
+
+func (s *repoTransactionCombine) GetTotalExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseDay, error) {
+	return s.repoTransaction.GetTotalExpenseDay(ctx, user_id)
+}
+
+func (s *repoTransactionCombine) GetTotalExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseWeek, error) {
+	return s.repoTransaction.GetTotalExpenseWeek(ctx, user_id)
+}
+
+func (s *repoTransactionCombine) GetTotalExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseMonth, error) {
+	return s.repoTransaction.GetTotalExpenseMonth(ctx, user_id)
+}
+
+func (s *repoTransactionCombine) GetTotalIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeDay, error) {
+	return s.repoTransaction.GetTotalIncomeDay(ctx, user_id)
+}
+
+func (s *repoTransactionCombine) GetTotalIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeWeek, error) {
+	return s.repoTransaction.GetTotalIncomeWeek(ctx, user_id)
+}
+
+func (s *repoTransactionCombine) GetTotalIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeMonth, error) {
+	return s.repoTransaction.GetTotalIncomeMonth(ctx, user_id)
 }
