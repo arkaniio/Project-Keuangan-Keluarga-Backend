@@ -159,6 +159,27 @@ func PayloadJoinDataCategoryAndUser(payload model.BudgetWithCategoryAndUser) (*m
 
 }
 
+func ParsingPayloadGoals(payload model.PayloadGoals, userId uuid.UUID) (*model.Goals, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.Goals{
+		Id:             uuid.New(),
+		User_id:        userId,
+		Name:           payload.Name,
+		Target_amount:  payload.Target_amount,
+		Current_amount: payload.Current_amount,
+		Start_date:     payload.Start_date,
+		Target_date:    payload.Target_date,
+		Status:         payload.Status,
+		Created_at:     time.Now().UTC(),
+		Updated_at:     time.Now().UTC(),
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {

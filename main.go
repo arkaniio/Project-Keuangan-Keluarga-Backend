@@ -70,6 +70,11 @@ func main() {
 	budgetSvc := service.NewBudgetService(budgetRepo)
 	budgetCtrl := controller.NewBudgetController(budgetSvc)
 
+	//goals injection
+	goalsRepo := repository.NewGoalsRepository(db)
+	goalsSvc := service.NewGoalsService(goalsRepo)
+	goalsCtrl := controller.NewControllerGoals(goalsSvc)
+
 	// ── 4. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
 	subRoiter := route.With()
@@ -77,11 +82,13 @@ func main() {
 	router_category := routes.CategoryRoutes(categoryCtrl, generalLimiter)
 	router_transaction := routes.KeuanganRoutes(transactionCtrl, generalLimiter)
 	router_budget := routes.BudgetRoutes(budgetCtrl, generalLimiter)
+	router_goals := routes.GoalsRoutes(goalsCtrl, generalLimiter)
 
 	subRoiter.Mount("/api/v1/users", router)
 	subRoiter.Mount("/api/v1/categories", router_category)
 	subRoiter.Mount("/api/v1/transactions", router_transaction)
 	subRoiter.Mount("/api/v1/budgets", router_budget)
+	subRoiter.Mount("/api/v1/goals", router_goals)
 
 	// ── 5. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{

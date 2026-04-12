@@ -17,8 +17,8 @@ type repoGoals struct {
 	db *sqlx.DB
 }
 
-func NewGoalsRepository(db *sqlx.DB) repoGoals {
-	return repoGoals{db: db}
+func NewGoalsRepository(db *sqlx.DB) GoalsRepository {
+	return &repoGoals{db: db}
 }
 
 func (r *repoGoals) CreateNewGoals(ctx context.Context, goals *model.Goals) error {
