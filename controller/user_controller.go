@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -104,6 +103,7 @@ func (s *ControllerHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	if user_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", false)
+		return
 	}
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
@@ -118,9 +118,6 @@ func (s *ControllerHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", false)
 		return
 	}
-
-	//debug
-	fmt.Println(users)
 
 	utils.ResponseSuccess(w, http.StatusOK, "Success to get the user id from token!", users)
 
