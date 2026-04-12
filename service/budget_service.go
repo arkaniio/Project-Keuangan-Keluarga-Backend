@@ -13,6 +13,7 @@ type BudgetService interface {
 	UpdateBudget(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadBudget) error
 	GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Budget, error)
 	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
+	DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
 }
 
 type budgetService struct {
@@ -37,4 +38,8 @@ func (s *budgetService) GetBudgetById(ctx context.Context, id uuid.UUID) (*model
 
 func (s *budgetService) GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error) {
 	return s.budgetRepo.GetBudgetByUserId(ctx, user_id)
+}
+
+func (s *budgetService) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {
+	return s.budgetRepo.DeleteBudget(ctx, id, user_id)
 }
