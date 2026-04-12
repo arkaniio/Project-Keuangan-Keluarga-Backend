@@ -103,3 +103,33 @@ type AvgIncomeDayNameCategory struct {
 	Category  string  `db:"category"`
 	AvgIncome float64 `db:"avg_income"`
 }
+
+type TotalExpenseDay struct {
+	Day          string  `db:"day"`
+	TotalExpense float64 `db:"total_expense"`
+}
+
+type TotalExpenseWeek struct {
+	Week         string  `db:"week"`
+	TotalExpense float64 `db:"total_expense"`
+}
+
+type TotalExpenseMonth struct {
+	Month        string  `db:"month"`
+	TotalExpense float64 `db:"total_expense"`
+}
+
+type TotalIncomeDay struct {
+	Day         string  `db:"day"`
+	TotalIncome float64 `db:"total_income"`
+}
+
+type TotalIncomeWeek struct {
+	Week        string  `db:"week"`
+	TotalIncome float64 `db:"total_income"`
+}
+
+type TotalIncomeMonth struct {
+	Month       string  `db:"month"`
+	TotalIncome float64 `db:"total_income"`
+}
