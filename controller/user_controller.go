@@ -41,18 +41,6 @@ func (s *ControllerHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users_email, err := s.service.GetUserByEmail(users.Email)
-	if err != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to get user by email", err.Error())
-		return
-	}
-	if users_email != nil {
-		utils.ResponseError(w, http.StatusBadRequest, "Email already exists", false)
-		return
-	}
-
-	utils.ResponseSuccess(w, http.StatusOK, "Success to create new user", nil)
-
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
@@ -60,6 +48,8 @@ func (s *ControllerHandler) Register(w http.ResponseWriter, r *http.Request) {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to create new user", err.Error())
 		return
 	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Success to create new user", nil)
 
 }
 

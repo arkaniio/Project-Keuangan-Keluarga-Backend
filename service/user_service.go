@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
+	"project-keuangan-keluarga/utils"
 
 	"github.com/google/uuid"
 )
@@ -26,7 +28,21 @@ func NewUserService(repo repository.UserRepository) UserService {
 }
 
 func (s *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
+
+	users_data, err := s.repo.GetUserByEmail(user.Email)
+	if err != nil {
+		return errors.New("Failed to get the users data based on their email!")
+	}
+	if users_data != nil {
+		return errors.New("Failed to get the users data because the value of users data is nil!")
+	}
+
+	if err := utils.IsValidEmail(user.Email); err != nil {
+		return errors.New("Failed to detect the right format of email user!")
+	}
+
 	return s.repo.CreateNewUser(ctx, user)
+
 }
 
 func (s *repoUser) GetUserByEmail(email string) (*model.User, error) {
