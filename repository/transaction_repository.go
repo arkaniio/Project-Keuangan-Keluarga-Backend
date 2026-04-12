@@ -402,3 +402,123 @@ func (r *repoTransaction) GetAvgIncomeDayNameCategory(ctx context.Context, user_
 	return &data, nil
 
 }
+
+func (r *repoTransaction) GetTotalExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseDay, error) {
+
+	query := `
+		SELECT DATE_TRUNC('day', date) as day,
+		SUM(amount) as total_expense
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'expense'
+		GROUP BY day
+		ORDER BY day ASC;
+	`
+
+	var data model.TotalExpenseDay
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the total expense day!" + err.Error())
+	}
+
+	return &data, nil
+
+}
+
+func (r *repoTransaction) GetTotalExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseWeek, error) {
+
+	query := `
+		SELECT DATE_TRUNC('week', date) as week,
+		SUM(amount) as total_expense
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'expense'
+		GROUP BY week
+		ORDER BY week ASC;
+	`
+
+	var data model.TotalExpenseWeek
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the total expense week!" + err.Error())
+	}
+
+	return &data, nil
+
+}
+
+func (r *repoTransaction) GetTotalExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseMonth, error) {
+
+	query := `
+		SELECT DATE_TRUNC('month', date) as month,
+		SUM(amount) as total_expense
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'expense'
+		GROUP BY month
+		ORDER BY month ASC;
+	`
+
+	var data model.TotalExpenseMonth
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the total expense month!" + err.Error())
+	}
+
+	return &data, nil
+
+}
+
+func (r *repoTransaction) GetTotalIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeDay, error) {
+
+	query := `
+		SELECT DATE_TRUNC('day', date) as day,
+		SUM(amount) as total_income
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'income'
+		GROUP BY day
+		ORDER BY day ASC;
+	`
+
+	var data model.TotalIncomeDay
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the total income day!" + err.Error())
+	}
+
+	return &data, nil
+
+}
+
+func (r *repoTransaction) GetTotalIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeWeek, error) {
+
+	query := `
+		SELECT DATE_TRUNC('week', date) as week,
+		SUM(amount) as total_income
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'income'
+		GROUP BY week
+		ORDER BY week ASC;
+	`
+
+	var data model.TotalIncomeWeek
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the total income week!" + err.Error())
+	}
+
+	return &data, nil
+
+}
+
+func (r *repoTransaction) GetTotalIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeMonth, error) {
+
+	query := `
+		SELECT DATE_TRUNC('month', date) as month,
+		SUM(amount) as total_income
+		FROM transactions 
+		WHERE user_id = $1 AND type = 'income'
+		GROUP BY month
+		ORDER BY month ASC;
+	`
+
+	var data model.TotalIncomeMonth
+	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+		return nil, errors.New("Failed to get the total income month!" + err.Error())
+	}
+
+	return &data, nil
+
+}
