@@ -16,6 +16,7 @@ type BudgetRepository interface {
 	GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Budget, error)
 	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 	GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
+	DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
 }
 
 type repoBudget struct {
@@ -110,5 +111,24 @@ func (r *repoBudget) GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*m
 	}
 
 	return &budget, nil
+
+}
+
+func (r *repoBudget) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {
+
+	tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to get and add the transaction!")
+	}
+
+	query := `
+		DELETE FROM budgets WHERE id = $1 AND user_id = $2;
+	`
+
+	if _, err := tx.ExecContext(ctx, query, id, user_id); err != nil {
+		return errors.New("Failed to execute the context and failed to update using query!")
+	}
+
+	return nil
 
 }
