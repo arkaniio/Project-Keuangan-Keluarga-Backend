@@ -37,3 +37,8 @@ type UpdatePayloadBudget struct {
 	EndDate      *time.Time `json:"end_date"`
 	IsActive     *bool      `json:"is_active"`
 }
+
+type GetLimitAmountByNameCategory struct {
+	Category_Name string `db:"category_name"`
+	Limit_amount  int64  `db:"limit_amount"`
+}
