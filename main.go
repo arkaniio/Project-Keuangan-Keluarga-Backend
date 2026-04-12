@@ -62,11 +62,11 @@ func main() {
 
 	// keuangan injection
 	transactionRepo := repository.NewTransactionRepository(db)
-	transactionSvc := service.NewTransactionService(transactionRepo)
+	budgetRepo := repository.NewBudgetRepository(db)
+	transactionSvc := service.NewTransactionService(transactionRepo, budgetRepo)
 	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
 
 	//budget injection
-	budgetRepo := repository.NewBudgetRepository(db)
 	budgetSvc := service.NewBudgetService(budgetRepo)
 	budgetCtrl := controller.NewBudgetController(budgetSvc)
 

@@ -21,7 +21,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction, g
 	r.Use(middleware.MiddlewareAuth)                      // auth required
 	r.Use(chimw.Recoverer)                                // recover from panics
 	r.Use(chimw.RequestID)                                // inject X-Request-Id header
-	r.Use(middleware.RateLimitMiddleware(generalLimiter))  // general rate limit: 60 req/min
+	r.Use(middleware.RateLimitMiddleware(generalLimiter)) // general rate limit: 60 req/min
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +45,12 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction, g
 	r.Get("/income", transactionsCtrl.GetTransactionDataInIncomeType_Bp)
 	r.Get("/expense-day-category", transactionsCtrl.GetAvgExpenseDayNameCategory_Bp)
 	r.Get("/income-day-category", transactionsCtrl.GetAvgIncomeDayNameCategory_Bp)
+	r.Get("/total-expense-day", transactionsCtrl.GetTotalExpenseDay_Bp)
+	r.Get("/total-expense-week", transactionsCtrl.GetTotalExpenseWeek_Bp)
+	r.Get("/total-expense-month", transactionsCtrl.GetTotalExpenseMonth_Bp)
+	r.Get("/total-income-day", transactionsCtrl.GetTotalIncomeDay_Bp)
+	r.Get("/total-income-week", transactionsCtrl.GetTotalIncomeWeek_Bp)
+	r.Get("/total-income-month", transactionsCtrl.GetTotalIncomeMonth_Bp)
 
 	return r
 }

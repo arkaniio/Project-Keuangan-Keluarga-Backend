@@ -503,7 +503,7 @@ func (c *ControllerHandlerTransaction) GetTotalIncomeDay_Bp(w http.ResponseWrite
 
 }
 
-func (c *ControllerHandlerTransaction) GetTotalIncomeWeek(w http.ResponseWriter, r *http.Request) {
+func (c *ControllerHandlerTransaction) GetTotalIncomeWeek_Bp(w http.ResponseWriter, r *http.Request) {
 
 	middleware_token_id, err := middleware.GetTokenId(w, r)
 	if err != nil {
