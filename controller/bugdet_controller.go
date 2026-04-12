@@ -124,3 +124,21 @@ func (c *ControllerBudget) DeleteBudget_Bp(w http.ResponseWriter, r *http.Reques
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to delete the budget!", true)
 
 }
+
+func (c *ControllerBudget) GetAllBudget_Bp(w http.ResponseWriter, r *http.Request) {
+
+	allowed_sort := []string{"created_at", "limit_amount"}
+	parsing_params := utils.ParsePaginationParams(r, allowed_sort, "created_at")
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	budgets_data, err := c.budgetService.GetAllBudget(ctx, parsing_params)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the budgets data!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get all of the data budgets!", budgets_data)
+
+}

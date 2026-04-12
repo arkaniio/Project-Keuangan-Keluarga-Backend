@@ -42,3 +42,35 @@ type GetLimitAmountByNameCategory struct {
 	Category_Name string `db:"category_name"`
 	Limit_amount  int64  `db:"limit_amount"`
 }
+
+type BudgetWithCategoryAndUser struct {
+	Id            uuid.UUID `json:"id"`
+	UserId        uuid.UUID `json:"user_id"`
+	Category_Id   uuid.UUID `json:"category_id"`
+	Limit_amount  int64     `json:"limit_amount"`
+	Period        string    `json:"period"`
+	StartDate     time.Time `json:"start_date"`
+	EndDate       time.Time `json:"end_date"`
+	IsActive      bool      `json:"is_active"`
+	Created_at    time.Time `json:"created_at"`
+	Updated_at    time.Time `json:"updated_at"`
+	Category_Name string    `json:"category_name"`
+	Category_Type string    `json:"category_type"`
+	User_Name     string    `json:"user_name"`
+	User_Email    string    `json:"user_email"`
+}
+
+type BudgetWithCategoryAndUserData struct {
+	Id            uuid.UUID `json:"id"`
+	UserId        uuid.UUID `json:"user_id"`
+	User_Data     User      `json:"user"`
+	Category_Id   uuid.UUID `json:"category_id"`
+	Category_Data Category  `json:"category"`
+	Limit_amount  int64     `json:"limit_amount"`
+	Period        string    `json:"period"`
+	StartDate     time.Time `json:"start_date"`
+	EndDate       time.Time `json:"end_date"`
+	IsActive      bool      `json:"is_active"`
+	Created_at    time.Time `json:"created_at"`
+	Updated_at    time.Time `json:"updated_at"`
+}

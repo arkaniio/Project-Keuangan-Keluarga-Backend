@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/utils"
 
@@ -17,6 +18,7 @@ type BudgetRepository interface {
 	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 	GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 	DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
+	GetAllBudget(ctx context.Context, params model.PaginationParams) ([]model.BudgetWithCategoryAndUserData, int, error)
 }
 
 type repoBudget struct {
@@ -130,5 +132,65 @@ func (r *repoBudget) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uui
 	}
 
 	return nil
+
+}
+
+func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationParams) ([]model.BudgetWithCategoryAndUserData, int, error) {
+
+	where := ""
+	args := []interface{}{}
+	argIdx := 1
+
+	if params.Search != "" {
+		where = fmt.Sprintf(" WHERE b.limit_amount ILIKE $%d", argIdx)
+		args = append(args, "%"+params.Search+"%")
+		argIdx++
+	}
+
+	qountQuery := `
+		SELECT COUNT(*) FROM budgets b
+		JOIN categories c ON b.category_id = c.id
+		JOIN users u ON b.user_id = u.id
+		WHERE b.user_id = $1
+	`
+
+	var total_items int
+	if err := r.db.GetContext(ctx, &total_items, qountQuery, args...); err != nil {
+		return nil, 0, errors.New("Failed to counting the data!")
+	}
+
+	offset := utils.CalculateOffset(params.Page, params.Limit)
+
+	query := fmt.Sprintf(`
+		SELECT b.id, b.user_id, u.username, u.email, c.name, c.type, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active, b.created_at, b.updated_at
+		FROM budgets b
+		JOIN categories c ON b.category_id = c.id
+		JOIN users u ON b.user_id = u.id
+		%s
+		ORDER BY b.%s %s
+		LIMIT $%d OFFSET $%d
+	`, where, params.Sort, params.Order, argIdx, argIdx+1)
+
+	args = append(args, params.Limit, offset)
+
+	var budget_array []model.BudgetWithCategoryAndUserData
+	rows, err := r.db.QueryxContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, errors.New("Failed to counting the data!")
+	}
+
+	for rows.Next() {
+		var budget_data model.BudgetWithCategoryAndUser
+		if err := rows.StructScan(budget_data); err != nil {
+			return nil, 0, errors.New("Failed to struct the budget type model")
+		}
+		budgets, err := utils.PayloadJoinDataCategoryAndUser(budget_data)
+		if err != nil {
+			return nil, 0, errors.New("Failed to get the budgets!")
+		}
+		budget_array = append(budget_array, *budgets)
+	}
+
+	return budget_array, total_items, nil
 
 }

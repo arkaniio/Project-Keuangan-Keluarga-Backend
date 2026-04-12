@@ -34,6 +34,7 @@ func BudgetRoutes(bgt_controller *controller.ControllerBudget, generalLimiter *r
 	r.Post("/", bgt_controller.CreateNewBudget_Bp)
 	r.Put("/update", bgt_controller.UpdateBudget_Bp)
 	r.Delete("/:id", bgt_controller.DeleteBudget_Bp)
+	r.Get("/", bgt_controller.GetAllBudget_Bp)
 
 	return r
 }

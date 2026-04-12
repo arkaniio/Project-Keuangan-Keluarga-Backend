@@ -133,6 +133,32 @@ func PayloadJoinDataCategory(payload model.PayloadCategoryWithUserData) (model.P
 
 }
 
+func PayloadJoinDataCategoryAndUser(payload model.BudgetWithCategoryAndUser) (*model.BudgetWithCategoryAndUserData, error) {
+
+	if payload.Id == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.BudgetWithCategoryAndUserData{
+		Id:     payload.Id,
+		UserId: payload.UserId,
+		User_Data: model.User{
+			Username: payload.User_Name,
+			Email:    payload.User_Email,
+		},
+		Category_Data: model.Category{
+			Name: payload.Category_Name,
+			Type: payload.Category_Type,
+		},
+		Limit_amount: payload.Limit_amount,
+		Period:       payload.Period,
+		StartDate:    payload.StartDate,
+		EndDate:      payload.EndDate,
+		IsActive:     payload.IsActive,
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {
