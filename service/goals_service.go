@@ -15,6 +15,7 @@ type GoalsService interface {
 	GetAllGoals(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
+	TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
 }
 
 type GoalsRepo struct {
@@ -60,3 +61,5 @@ func (s *GoalsRepo) DeleteGoals(ctx context.Context, user_id uuid.UUID) error {
 func (s *GoalsRepo) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error {
 	return s.repo.UpdateGoals(ctx, user_id, payload)
 }
+
+func (s *GoalsRepo) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
