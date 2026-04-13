@@ -155,3 +155,28 @@ func (c *ControllerGoals) TrackingProgressGoals_Bp(w http.ResponseWriter, r *htt
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to track the progress goals", goals_data)
 
 }
+
+func (c *ControllerGoals) RemainingDaysGoals_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token id from middleware", err.Error())
+		return
+	}
+	if middleware_token_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the type uuid!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	goals_data, err := c.service.RemainingDaysGoals(ctx, middleware_token_id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the remaining days for goals data!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get remaining days for goals data!", goals_data)
+
+}

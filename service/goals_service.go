@@ -16,6 +16,7 @@ type GoalsService interface {
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
 	TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
+	RemainingDaysGoals(ctx context.Context, user_id uuid.UUID) ([]model.RemainingDays, error)
 }
 
 type GoalsRepo struct {
@@ -62,4 +63,10 @@ func (s *GoalsRepo) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload 
 	return s.repo.UpdateGoals(ctx, user_id, payload)
 }
 
-func (s *GoalsRepo) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
+func (s *GoalsRepo) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error) {
+	return s.repo.TrackingProgressGoals(ctx, user_id)
+}
+
+func (s *GoalsRepo) RemainingDaysGoals(ctx context.Context, user_id uuid.UUID) ([]model.RemainingDays, error) {
+	return s.repo.RemainingDaysGoals(ctx, user_id)
+}
