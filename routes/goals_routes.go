@@ -30,7 +30,7 @@ func GoalsRoutes(goalsCtrl controller.ControllerGoals, generalLimiter *ratelimit
 		json.NewEncoder(w).Encode(map[string]string{"message": "pong"})
 	})
 
-	// API v1 routes
+	// API v1 routesww
 	r.Post("/", goalsCtrl.CreateNewGoals_Bp)
 	r.Get("/", goalsCtrl.GetAllGoals_Bp)
 	r.Delete("/delete", goalsCtrl.DeleteGoals_Bp)
