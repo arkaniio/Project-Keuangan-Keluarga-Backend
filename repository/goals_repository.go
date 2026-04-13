@@ -7,12 +7,14 @@ import (
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/utils"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
 type GoalsRepository interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
 	GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error)
+	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 }
 
 type repoGoals struct {
@@ -101,5 +103,30 @@ func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationPara
 	}
 
 	return goals_data, total_items, nil
+
+}
+
+func (r *repoGoals) DeleteGoals(ctx context.Context, id uuid.UUID) error {
+
+	tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to settigs the new transaction for goals!")
+	}
+
+	query := `
+		DELETE FROM goals WHERE user_id = $1
+	`
+
+	if _, err := tx.ExecContext(ctx, query, id); err != nil {
+		tx.Rollback()
+		return errors.New("Failed to execute the query for goals!")
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return errors.New("Failed to commit the transaction for goals!")
+	}
+
+	return nil
 
 }

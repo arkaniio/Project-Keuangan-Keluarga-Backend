@@ -6,11 +6,14 @@ import (
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
 	"project-keuangan-keluarga/utils"
+
+	"github.com/google/uuid"
 )
 
 type GoalsService interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
 	GetAllGoals(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error)
+	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 }
 
 type GoalsRepo struct {
@@ -47,4 +50,8 @@ func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationPara
 		Pagination: meta,
 	}, nil
 
+}
+
+func (s *GoalsRepo) DeleteGoals(ctx context.Context, user_id uuid.UUID) error {
+	return s.repo.DeleteGoals(ctx, user_id)
 }

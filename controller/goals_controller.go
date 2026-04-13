@@ -78,3 +78,26 @@ func (c *ControllerGoals) GetAllGoals_Bp(w http.ResponseWriter, r *http.Request)
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the full data of goals", goals_data)
 
 }
+
+func (c *ControllerGoals) DeleteGoals_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the middleware id token!", err.Error())
+	}
+	if middleware_token_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to detect the uuid type!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	if err := c.service.DeleteGoals(ctx, middleware_token_id); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to delete the goals!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to delete the goals!", true)
+
+}
