@@ -39,3 +39,36 @@ type PayloadUpdateGoals struct {
 	Status         *string    `json:"status"`
 	Updated_at     *time.Time `json:"updated_at"`
 }
+
+type PayloadGoalsWithUserData struct {
+	Id             uuid.UUID `json:"id"`
+	User_id        uuid.UUID `json:"user_id"`
+	Username       string    `json:"username"`
+	Email          string    `json:"email"`
+	Profile_Img    string    `json:"profile_img"`
+	Name           string    `json:"name"`
+	Target_amount  float64   `json:"target_amount"`
+	Current_amount float64   `json:"current_amount"`
+	Start_date     string    `json:"start_date"`
+	Target_date    string    `json:"target_date"`
+	Status         string    `json:"status"`
+	Created_at     time.Time `json:"created_at"`
+	Updated_at     time.Time `json:"updated_at"`
+}
+
+type PayloadGoalsWithUser struct {
+	Id             uuid.UUID `json:"id"`
+	User_id        uuid.UUID `json:"user_id"`
+	User           User      `json:"user"`
+	Username       string    `json:"username"`
+	Email          string    `json:"email"`
+	Profile_Img    string    `json:"profile_img"`
+	Name           string    `json:"name"`
+	Target_amount  float64   `json:"target_amount"`
+	Current_amount float64   `json:"current_amount"`
+	Start_date     string    `json:"start_date"`
+	Target_date    string    `json:"target_date"`
+	Status         string    `json:"status"`
+	Created_at     time.Time `json:"created_at"`
+	Updated_at     time.Time `json:"updated_at"`
+}
