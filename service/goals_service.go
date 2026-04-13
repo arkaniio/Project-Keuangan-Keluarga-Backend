@@ -14,6 +14,7 @@ type GoalsService interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
 	GetAllGoals(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
+	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
 }
 
 type GoalsRepo struct {
@@ -54,4 +55,8 @@ func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationPara
 
 func (s *GoalsRepo) DeleteGoals(ctx context.Context, user_id uuid.UUID) error {
 	return s.repo.DeleteGoals(ctx, user_id)
+}
+
+func (s *GoalsRepo) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error {
+	return s.repo.UpdateGoals(ctx, user_id, payload)
 }

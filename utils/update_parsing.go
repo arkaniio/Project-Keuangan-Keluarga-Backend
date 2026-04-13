@@ -129,6 +129,39 @@ func UpdateToolsBudget(payload model.UpdatePayloadBudget, id uuid.UUID) (string,
 
 }
 
+func UpdateToolsGoals(payload model.PayloadUpdateGoals, user_id uuid.UUID) (string, []interface{}, error) {
+
+	if *payload.Current_amount >= *payload.Target_amount {
+		*payload.Status = "completed"
+	} else {
+		*payload.Status = "active"
+	}
+
+	field := []fieldMapping{
+		{
+			Column: "name", Value: valOrNil(payload.Name), IsSet: payload.Name != nil,
+		},
+		{
+			Column: "target_amount", Value: valOrNil(payload.Target_amount), IsSet: payload.Target_amount != nil,
+		},
+		{
+			Column: "current_amount", Value: valOrNil(payload.Current_amount), IsSet: payload.Current_amount != nil,
+		},
+		{
+			Column: "start_date", Value: valOrNil(payload.Start_date), IsSet: payload.Start_date != nil,
+		},
+		{
+			Column: "target_date", Value: valOrNil(payload.Target_date), IsSet: payload.Target_date != nil,
+		},
+		{
+			Column: "status", Value: valOrNil(payload.Status), IsSet: payload.Status != nil,
+		},
+	}
+
+	return buildUpdateQuery("goals", field, user_id)
+
+}
+
 func UpdateToolsUser(payload model.UpdatePayloadUser, id uuid.UUID) (string, []interface{}, error) {
 
 	if payload.Email != nil {

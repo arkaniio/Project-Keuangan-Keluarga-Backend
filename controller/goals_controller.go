@@ -101,3 +101,32 @@ func (c *ControllerGoals) DeleteGoals_Bp(w http.ResponseWriter, r *http.Request)
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to delete the goals!", true)
 
 }
+
+func (c *ControllerGoals) UpdateGoals_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the middleware id token!", err.Error())
+	}
+	if middleware_token_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to detect the uuid type!", false)
+		return
+	}
+
+	var payload model.PayloadUpdateGoals
+	if err := utils.DecodeJson(r, &payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode json the payload!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	if err := c.service.UpdateGoals(ctx, middleware_token_id, payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to update the goals!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to update the goals!", true)
+
+}

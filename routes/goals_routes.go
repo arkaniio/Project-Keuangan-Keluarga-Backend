@@ -34,6 +34,7 @@ func GoalsRoutes(goalsCtrl controller.ControllerGoals, generalLimiter *ratelimit
 	r.Post("/", goalsCtrl.CreateNewGoals_Bp)
 	r.Get("/", goalsCtrl.GetAllGoals_Bp)
 	r.Delete("/delete", goalsCtrl.DeleteGoals_Bp)
+	r.Put("/update", goalsCtrl.UpdateGoals_Bp)
 
 	return r
 }

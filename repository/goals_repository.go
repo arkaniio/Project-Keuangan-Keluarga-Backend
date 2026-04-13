@@ -15,6 +15,7 @@ type GoalsRepository interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
 	GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
+	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
 }
 
 type repoGoals struct {
@@ -118,6 +119,32 @@ func (r *repoGoals) DeleteGoals(ctx context.Context, id uuid.UUID) error {
 	`
 
 	if _, err := tx.ExecContext(ctx, query, id); err != nil {
+		tx.Rollback()
+		return errors.New("Failed to execute the query for goals!")
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return errors.New("Failed to commit the transaction for goals!")
+	}
+
+	return nil
+
+}
+
+func (r *repoGoals) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error {
+
+	tx, err := utils.AddTransaction(r.db, ctx)
+	if err != nil {
+		return errors.New("Failed to settigs the new transaction for goals!")
+	}
+
+	query, args, err := utils.UpdateToolsGoals(payload, user_id)
+	if err != nil {
+		return errors.New("Failed to update the goals!")
+	}
+
+	if _, err := tx.ExecContext(ctx, query, args...); err != nil {
 		tx.Rollback()
 		return errors.New("Failed to execute the query for goals!")
 	}
