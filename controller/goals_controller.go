@@ -59,3 +59,22 @@ func (c *ControllerGoals) CreateNewGoals_Bp(w http.ResponseWriter, r *http.Reque
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully to create the new goals!", true)
 
 }
+
+func (c *ControllerGoals) GetAllGoals_Bp(w http.ResponseWriter, r *http.Request) {
+
+	allowed_sort := []string{"created_at", "target_amount", "current_amount"}
+
+	parsing_params := utils.ParsePaginationParams(r, allowed_sort, "created_at")
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	goals_data, err := c.service.GetAllGoals(ctx, parsing_params)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the data of goals!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the full data of goals", goals_data)
+
+}
