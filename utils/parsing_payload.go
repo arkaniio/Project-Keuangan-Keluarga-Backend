@@ -180,6 +180,31 @@ func ParsingPayloadGoals(payload model.PayloadGoals, userId uuid.UUID) (*model.G
 
 }
 
+func PayloadJoinDataGoals(payload model.PayloadGoalsWithUserData) (*model.PayloadGoalsWithUser, error) {
+
+	if payload.Id == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.PayloadGoalsWithUser{
+		Id:      payload.Id,
+		User_id: payload.User_id,
+		User: model.User{
+			Username: payload.Username,
+			Email:    payload.Email,
+		},
+		Name:           payload.Name,
+		Target_amount:  payload.Target_amount,
+		Current_amount: payload.Current_amount,
+		Start_date:     payload.Start_date,
+		Target_date:    payload.Target_date,
+		Status:         payload.Status,
+		Created_at:     payload.Created_at,
+		Updated_at:     payload.Updated_at,
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {

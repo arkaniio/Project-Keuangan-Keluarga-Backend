@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/utils"
 
@@ -11,6 +12,7 @@ import (
 
 type GoalsRepository interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
+	GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error)
 }
 
 type repoGoals struct {
@@ -44,5 +46,60 @@ func (r *repoGoals) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 	}
 
 	return nil
+
+}
+
+func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error) {
+
+	where := ""
+	args := []interface{}{}
+	argIdx := 1
+
+	if params.Search != "" {
+		where = fmt.Sprintf(" WHERE g.name ILIKE $%d", argIdx)
+		args = append(args, "%"+params.Search+"%")
+		argIdx++
+	}
+
+	total_count_query := `
+		SELECT COUNT(*) FROM goals g
+		LEFT JOIN users u ON g.user_id = u.id
+		`
+
+	var total_items int
+	if err := r.db.GetContext(ctx, &total_items, total_count_query, args...); err != nil {
+		return nil, 0, errors.New("Failed to get the total items for get total count")
+	}
+
+	query := fmt.Sprintf(`
+		SELECT g.id, g.user_id, u.username, u.email, u.profile_img, g.name, g.target_amount, g.current_amount, g.start_date, g.target_date, g.status, g.created_at, g.updated_at
+		FROM goals g
+		LEFT JOIN users u ON g.user_id = u.id
+		%s
+		ORDER BY g.created_at DESC
+		LIMIT $%d OFFSET $%d
+	`, where, argIdx, argIdx+1)
+
+	args = append(args, params.Limit, params.Page)
+
+	var goals_data []model.PayloadGoalsWithUser
+	rows, err := r.db.QueryxContext(ctx, query, args...)
+	if err != nil {
+		return nil, 0, errors.New("Failed to get the goals data")
+	}
+
+	for rows.Next() {
+		var goals model.PayloadGoalsWithUserData
+		if err := rows.StructScan(&goals); err != nil {
+			return nil, 0, errors.New("Failed to scan the goals data")
+		}
+		goals_struct, err := utils.PayloadJoinDataGoals(goals)
+		if err != nil {
+			return nil, 0, errors.New("Failed to parse the goals data")
+		}
+		goals_data = append(goals_data, *goals_struct)
+	}
+
+	return goals_data, total_items, nil
 
 }
