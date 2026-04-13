@@ -16,6 +16,7 @@ type GoalsRepository interface {
 	GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
+	TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
 }
 
 type repoGoals struct {
@@ -155,5 +156,39 @@ func (r *repoGoals) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload 
 	}
 
 	return nil
+
+}
+
+func (r *repoGoals) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error) {
+
+	query := `
+		SELECT 
+    	id,
+    	name,
+    	target_amount,
+    	current_amount,
+    	target_date
+		FROM goals
+		WHERE user_id = $1;
+	`
+
+	rows, err := r.db.Queryx(query, user_id)
+	if err != nil {
+		return nil, errors.New("Failed to get the rows result from db!")
+	}
+
+	var goals_data []model.ProgressGoals
+
+	for rows.Next() {
+		var g model.ProgressGoals
+		if err := rows.StructScan(&g); err != nil {
+			return nil, errors.New("Failed to scan the struct progress goals!")
+		}
+
+		g.Progress = g.Current_amount / g.Target_amount * 100
+		goals_data = append(goals_data, g)
+	}
+
+	return goals_data, nil
 
 }
