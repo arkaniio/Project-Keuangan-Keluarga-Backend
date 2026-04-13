@@ -32,6 +32,7 @@ func GoalsRoutes(goalsCtrl controller.ControllerGoals, generalLimiter *ratelimit
 
 	// API v1 routes
 	r.Post("/", goalsCtrl.CreateNewGoals_Bp)
+	r.Get("/", goalsCtrl.GetAllGoals_Bp)
 
 	return r
 }
