@@ -13,7 +13,7 @@ import (
 type CategoryService interface {
 	CreateNewCategory(ctx context.Context, categories *model.Category) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
-	DeleteCategory(ctx context.Context, id uuid.UUID) error
+	DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
 	GetAllCategory(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
 }
@@ -43,11 +43,33 @@ func (s *repoCategoryCombine) CreateNewCategory(ctx context.Context, categories 
 }
 
 func (s *repoCategoryCombine) UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error {
+
+	users, err := s.repoUser.GetUserById(ctx, id)
+	if err != nil {
+		return errors.New("Failed to get the users data!")
+	}
+
+	if users.Role != "kepala keluarga" {
+		return errors.New("Failed to access this method!")
+	}
+
 	return s.repoCategory.UpdateCategory(ctx, id, payload)
+
 }
 
-func (s *repoCategoryCombine) DeleteCategory(ctx context.Context, id uuid.UUID) error {
-	return s.repoCategory.DeleteCategory(ctx, id)
+func (s *repoCategoryCombine) DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {
+
+	users, err := s.repoUser.GetUserById(ctx, id)
+	if err != nil {
+		return errors.New("Failed to get the users data!")
+	}
+
+	if users.Role != "kepala keluarga" {
+		return errors.New("Failed to access this method!")
+	}
+
+	return s.repoCategory.DeleteCategory(ctx, id, user_id)
+
 }
 
 func (s *repoCategoryCombine) GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error) {

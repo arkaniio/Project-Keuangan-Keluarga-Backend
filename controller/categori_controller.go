@@ -8,6 +8,8 @@ import (
 	"project-keuangan-keluarga/service"
 	"project-keuangan-keluarga/utils"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ControllerHandlerCategory struct {
@@ -84,12 +86,23 @@ func (c *ControllerHandlerCategory) DeleteCategory_Bp(w http.ResponseWriter, r *
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	userId, err := middleware.GetTokenId(w, r)
+	id_params, err := utils.ParamsChiRouter("id", r)
 	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the id params!", err.Error())
 		return
 	}
 
-	if err := c.CategoryService.DeleteCategory(ctx, userId); err != nil {
+	middleware_token_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the middleware token id!", err.Error())
+		return
+	}
+	if middleware_token_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the type of uuid!", false)
+		return
+	}
+
+	if err := c.CategoryService.DeleteCategory(ctx, id_params, middleware_token_id); err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, "Failed to delete the category!", err.Error())
 		return
 	}

@@ -57,7 +57,7 @@ func main() {
 
 	// category injection
 	categoryRepo := repository.NewCategoryRepository(db)
-	categorySvc := service.NewCategoryService(categoryRepo)
+	categorySvc := service.NewCategoryService(categoryRepo, userRepo)
 	categoryCtrl := controller.NewControllerHandlerCategory(categorySvc)
 
 	// keuangan injection
