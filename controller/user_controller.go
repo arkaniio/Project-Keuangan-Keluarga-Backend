@@ -218,6 +218,20 @@ func (s *ControllerHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 func (s *ControllerHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 
+	middleware_role, err := middleware.GetTokenRole(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the middleware role!", err.Error())
+		return
+	}
+	if middleware_role == "" {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the value of middleware role!", false)
+	}
+
+	if middleware_role != "kepala keluarga" {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to access this data!", false)
+		return
+	}
+
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 

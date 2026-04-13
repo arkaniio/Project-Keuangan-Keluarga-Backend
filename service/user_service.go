@@ -41,6 +41,10 @@ func (s *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 		return errors.New("Failed to detect the right format of email user!")
 	}
 
+	if user.Role != "kepala keluarga" && user.Role != "anak" && user.Role != "ibu rumah tangga" {
+		return errors.New("Failed to access the role type!")
+	}
+
 	return s.repo.CreateNewUser(ctx, user)
 
 }
