@@ -14,7 +14,7 @@ import (
 
 type GoalsRepository interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
-	GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error)
+	GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
 	TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
@@ -55,14 +55,14 @@ func (r *repoGoals) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 
 }
 
-func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationParams) ([]model.PayloadGoalsWithUser, int, error) {
+func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error) {
 
 	where := ""
 	args := []interface{}{}
 	argIdx := 1
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE g.name ILIKE $%d", argIdx)
+		where = fmt.Sprintf(" WHERE g.name ILIKE $%d AND g.user_id = $%d", argIdx, argIdx+1)
 		args = append(args, "%"+params.Search+"%")
 		argIdx++
 	}

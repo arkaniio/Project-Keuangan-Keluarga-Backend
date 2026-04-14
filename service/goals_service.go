@@ -12,7 +12,7 @@ import (
 
 type GoalsService interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
-	GetAllGoals(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error)
+	GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
 	TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
@@ -20,11 +20,12 @@ type GoalsService interface {
 }
 
 type GoalsRepo struct {
-	repo repository.GoalsRepository
+	repo     repository.GoalsRepository
+	repoUser repository.UserRepository
 }
 
-func NewGoalsService(repo repository.GoalsRepository) GoalsService {
-	return &GoalsRepo{repo: repo}
+func NewGoalsService(repo repository.GoalsRepository, repoUser repository.UserRepository) GoalsService {
+	return &GoalsRepo{repo: repo, repoUser: repoUser}
 }
 
 func (s *GoalsRepo) CreateNewGoals(ctx context.Context, goals *model.Goals) error {
@@ -39,9 +40,18 @@ func (s *GoalsRepo) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 
 }
 
-func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error) {
+func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error) {
 
-	goals_data, total_items, err := s.repo.GetAllGoals(ctx, params)
+	users_data, err := s.repoUser.GetUserById(ctx, user_id)
+	if err != nil {
+		return model.PaginatedResponse{}, errors.New("Failed to get the users data!")
+	}
+
+	if users_data.Role != "kepala keluarga" {
+		return model.PaginatedResponse{}, errors.New("Failed to get the paginate response!")
+	}
+
+	goals_data, total_items, err := s.repo.GetAllGoals(ctx, params, user_id)
 	if err != nil {
 		return model.PaginatedResponse{}, errors.New("Failed to get the all goals with the pagination")
 	}
@@ -56,10 +66,30 @@ func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationPara
 }
 
 func (s *GoalsRepo) DeleteGoals(ctx context.Context, user_id uuid.UUID) error {
+
+	users_data, err := s.repoUser.GetUserById(ctx, user_id)
+	if err != nil {
+		return errors.New("Failed to get the users data!")
+	}
+
+	if users_data.Id != user_id {
+		return errors.New("Failed to delete goals! because the id is not same!")
+	}
+
 	return s.repo.DeleteGoals(ctx, user_id)
 }
 
 func (s *GoalsRepo) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error {
+
+	users_data, err := s.repoUser.GetUserById(ctx, user_id)
+	if err != nil {
+		return errors.New("Failed to get the users data in db!!")
+	}
+
+	if users_data.Id != user_id {
+		return errors.New("Failed to update goals! because the id is not same!")
+	}
+
 	return s.repo.UpdateGoals(ctx, user_id, payload)
 }
 
