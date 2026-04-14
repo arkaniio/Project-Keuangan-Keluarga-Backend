@@ -21,17 +21,37 @@ type BudgetService interface {
 
 type budgetService struct {
 	budgetRepo repository.BudgetRepository
+	repoUser   repository.UserRepository
 }
 
-func NewBudgetService(budgetRepo repository.BudgetRepository) BudgetService {
-	return &budgetService{budgetRepo: budgetRepo}
+func NewBudgetService(budgetRepo repository.BudgetRepository, repoUser repository.UserRepository) BudgetService {
+	return &budgetService{budgetRepo: budgetRepo, repoUser: repoUser}
 }
 
 func (s *budgetService) CreateNewBudget(ctx context.Context, payload *model.Budget) error {
+	users_data, err := s.repoUser.GetUserById(ctx, payload.UserId)
+	if err != nil {
+		return errors.New("Failed to get the users data!")
+	}
+
+	if users_data.Id != payload.UserId {
+		return errors.New("Failed to access this method, id is not same!")
+	}
+
 	return s.budgetRepo.CreateNewBudget(ctx, payload)
 }
 
 func (s *budgetService) UpdateBudget(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadBudget) error {
+
+	users_data, err := s.repoUser.GetUserById(ctx, id)
+	if err != nil {
+		return errors.New("Failed to get the users data!")
+	}
+
+	if users_data.Id != id {
+		return errors.New("Failed to access this method, id is not same!")
+	}
+
 	return s.budgetRepo.UpdateBudget(ctx, id, payload)
 }
 
