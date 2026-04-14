@@ -14,7 +14,7 @@ import (
 type CategoryRepository interface {
 	CreateNewCategory(ctx context.Context, categories *model.Category) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
-	DeleteCategory(ctx context.Context, id uuid.UUID) error
+	DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
 	GetAllCategory(ctx context.Context, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error)
 }
@@ -87,7 +87,7 @@ func (r *repoCategory) UpdateCategory(ctx context.Context, id uuid.UUID, payload
 
 }
 
-func (r *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID) error {
+func (r *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {
 
 	db_tx, err := utils.AddTransaction(r.db, ctx)
 	if err != nil {
@@ -96,7 +96,7 @@ func (r *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID) error {
 	defer db_tx.Rollback()
 
 	query := `
-		DELETE FROM categories WHERE id = $1;
+		DELETE FROM categories WHERE id = $1 AND user_id = $2;
 	`
 
 	if _, err := db_tx.ExecContext(ctx, query, id); err != nil {
