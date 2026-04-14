@@ -16,7 +16,7 @@ type BudgetService interface {
 	GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Budget, error)
 	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 	DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
-	GetAllBudget(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error)
+	GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error)
 }
 
 type budgetService struct {
@@ -67,9 +67,18 @@ func (s *budgetService) DeleteBudget(ctx context.Context, id uuid.UUID, user_id 
 	return s.budgetRepo.DeleteBudget(ctx, id, user_id)
 }
 
-func (s *budgetService) GetAllBudget(ctx context.Context, params model.PaginationParams) (model.PaginatedResponse, error) {
+func (s *budgetService) GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error) {
 
-	budgets, total_items, err := s.budgetRepo.GetAllBudget(ctx, params)
+	users_data, err := s.repoUser.GetUserById(ctx, user_id)
+	if err != nil {
+		return model.PaginatedResponse{}, errors.New("Failed to get the users data!")
+	}
+
+	if users_data.Id != user_id {
+		return model.PaginatedResponse{}, errors.New("Failed to access this method, id is not same!")
+	}
+
+	budgets, total_items, err := s.budgetRepo.GetAllBudget(ctx, params, user_id)
 	if err != nil {
 		return model.PaginatedResponse{}, errors.New("Failed to get the all budgets!")
 	}

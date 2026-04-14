@@ -18,7 +18,7 @@ type BudgetRepository interface {
 	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 	GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
 	DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
-	GetAllBudget(ctx context.Context, params model.PaginationParams) ([]model.BudgetWithCategoryAndUserData, int, error)
+	GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error)
 }
 
 type repoBudget struct {
@@ -135,15 +135,15 @@ func (r *repoBudget) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uui
 
 }
 
-func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationParams) ([]model.BudgetWithCategoryAndUserData, int, error) {
+func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error) {
 
 	where := ""
 	args := []interface{}{}
 	argIdx := 1
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE b.limit_amount ILIKE $%d", argIdx)
-		args = append(args, "%"+params.Search+"%")
+		where = fmt.Sprintf(" WHERE b.limit_amount ILIKE $%d AND b.user_id = $%d", argIdx, argIdx+1)
+		args = append(args, "%"+params.Search+"%", user_id)
 		argIdx++
 	}
 
