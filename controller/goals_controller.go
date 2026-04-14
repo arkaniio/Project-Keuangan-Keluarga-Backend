@@ -66,10 +66,19 @@ func (c *ControllerGoals) GetAllGoals_Bp(w http.ResponseWriter, r *http.Request)
 
 	parsing_params := utils.ParsePaginationParams(r, allowed_sort, "created_at")
 
+	middleware_token_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token id from middleware!", err.Error())
+		return
+	}
+	if middleware_token_id == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the uuid type for middleware token id!", false)
+	}
+
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	goals_data, err := c.service.GetAllGoals(ctx, parsing_params)
+	goals_data, err := c.service.GetAllGoals(ctx, parsing_params, middleware_token_id)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the data of goals!", err.Error())
 		return
