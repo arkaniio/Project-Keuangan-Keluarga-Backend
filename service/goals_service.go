@@ -42,15 +42,6 @@ func (s *GoalsRepo) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 
 func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error) {
 
-	users_data, err := s.repoUser.GetUserById(ctx, user_id)
-	if err != nil {
-		return model.PaginatedResponse{}, errors.New("Failed to get the users data!")
-	}
-
-	if users_data.Role != "kepala keluarga" {
-		return model.PaginatedResponse{}, errors.New("Failed to get the paginate response!")
-	}
-
 	goals_data, total_items, err := s.repo.GetAllGoals(ctx, params, user_id)
 	if err != nil {
 		return model.PaginatedResponse{}, errors.New("Failed to get the all goals with the pagination")

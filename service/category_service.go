@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"project-keuangan-keluarga/model"
 	"project-keuangan-keluarga/repository"
 	"project-keuangan-keluarga/utils"
@@ -29,44 +28,17 @@ func NewCategoryService(repoCategory repository.CategoryRepository, repoUser rep
 
 func (s *repoCategoryCombine) CreateNewCategory(ctx context.Context, categories *model.Category) error {
 
-	users_data, err := s.repoUser.GetUserById(ctx, categories.UserId)
-	if err != nil {
-		return errors.New("Failed to get the users data!")
-	}
-
-	if users_data.Role != "kepala keluarga" {
-		return errors.New("Failed to access this method!")
-	}
-
 	return s.repoCategory.CreateNewCategory(ctx, categories)
 
 }
 
 func (s *repoCategoryCombine) UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error {
 
-	users, err := s.repoUser.GetUserById(ctx, id)
-	if err != nil {
-		return errors.New("Failed to get the users data!")
-	}
-
-	if users.Role != "kepala keluarga" {
-		return errors.New("Failed to access this method!")
-	}
-
 	return s.repoCategory.UpdateCategory(ctx, id, payload)
 
 }
 
 func (s *repoCategoryCombine) DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {
-
-	users, err := s.repoUser.GetUserById(ctx, id)
-	if err != nil {
-		return errors.New("Failed to get the users data!")
-	}
-
-	if users.Role != "kepala keluarga" {
-		return errors.New("Failed to access this method!")
-	}
 
 	return s.repoCategory.DeleteCategory(ctx, id, user_id)
 
