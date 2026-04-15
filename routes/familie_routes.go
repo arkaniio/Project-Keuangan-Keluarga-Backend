@@ -28,8 +28,10 @@ func FamilieRoutes(familieCtrl controller.ControllerHandlerFamilie, generalLimit
 		json.NewEncoder(w).Encode(map[string]string{"message": "pong"})
 	})
 
-	// API v1 routesww
+	// API v1 routes
 	r.Post("/", familieCtrl.CreateNewFamilie_Bp)
+	r.Delete("/:id", familieCtrl.DeleteFamilie_Bp)
+	r.Get("/all", familieCtrl.GetAllFamilie_Bp)
 
 	return r
 }

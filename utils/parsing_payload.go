@@ -220,6 +220,26 @@ func ParsingPayloadFamilie(payload model.PayloadFamilie, userId uuid.UUID) (*mod
 
 }
 
+func PayloadJoinDataFamilie(payload model.PayloadFamilieWithUserData) (model.PayloadFamilieWithUser, error) {
+
+	if payload.Id == uuid.Nil {
+		return model.PayloadFamilieWithUser{}, errors.New("Failed to get the uuid file type!")
+	}
+
+	return model.PayloadFamilieWithUser{
+		Id:         payload.Id,
+		Name:       payload.Name,
+		Created_By: payload.Created_By,
+		User: model.User{
+			Id:       payload.Created_By,
+			Username: payload.Username,
+			Email:    payload.Email,
+		},
+		Created_at: payload.Created_at,
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {

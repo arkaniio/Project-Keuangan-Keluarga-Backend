@@ -78,6 +78,21 @@ func UpdateToolsCategory(payload model.UpdatePayloadCategory, id uuid.UUID) (str
 	return buildUpdateQuery("categories", fields, id)
 }
 
+func UpdateToolsFamilie(payload model.UpdateFamilie, user_id uuid.UUID) (string, []interface{}, error) {
+
+	field_map := []fieldMapping{
+		{
+			Column: "name", Value: valOrNil(payload.Name), IsSet: payload.Name != nil,
+		},
+		{
+			Column: "created_by", Value: valOrNil(payload.Created_By), IsSet: payload.Created_By != nil,
+		},
+	}
+
+	return buildUpdateQuery("families", field_map, user_id)
+
+}
+
 func UpdateToolsTransactions(payload model.UpdatePayloadTransaction, id uuid.UUID) (string, []interface{}, error) {
 	// Validate type if provided
 	if payload.Type != nil {
