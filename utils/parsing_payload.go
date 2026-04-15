@@ -205,6 +205,21 @@ func PayloadJoinDataGoals(payload model.PayloadGoalsWithUserData) (*model.Payloa
 
 }
 
+func ParsingPayloadFamilie(payload model.PayloadFamilie, userId uuid.UUID) (*model.Familie, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.Familie{
+		Id:         uuid.New(),
+		Name:       payload.Name,
+		Created_By: userId,
+		Created_at: time.Now().UTC(),
+	}, nil
+
+}
+
 func PayloaUpdateInt64(dest **int64, val int64) {
 
 	if val != 0 {

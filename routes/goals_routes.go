@@ -12,7 +12,7 @@ import (
 	"project-keuangan-keluarga/middleware/ratelimiter"
 )
 
-// CategoryRoutes creates the chi router for category-related endpoints.
+// GoalsRoutes creates the chi router for goals-related endpoints.
 func GoalsRoutes(goalsCtrl controller.ControllerGoals, generalLimiter *ratelimiter.Limiter) *chi.Mux {
 	r := chi.NewRouter()
 

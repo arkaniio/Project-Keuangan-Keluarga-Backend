@@ -67,13 +67,18 @@ func main() {
 	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
 
 	//budget injection
-	budgetSvc := service.NewBudgetService(budgetRepo)
+	budgetSvc := service.NewBudgetService(budgetRepo, userRepo)
 	budgetCtrl := controller.NewBudgetController(budgetSvc)
 
 	//goals injection
 	goalsRepo := repository.NewGoalsRepository(db)
-	goalsSvc := service.NewGoalsService(goalsRepo)
+	goalsSvc := service.NewGoalsService(goalsRepo, userRepo)
 	goalsCtrl := controller.NewControllerGoals(goalsSvc)
+
+	//familie injection
+	familieRepo := repository.NewFamilieRepository(db)
+	familieSvc := service.NewFamilieService(familieRepo, userRepo)
+	familieCtrl := controller.NewControllerHandlerFamilie(familieSvc)
 
 	// ── 4. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
@@ -83,12 +88,14 @@ func main() {
 	router_transaction := routes.KeuanganRoutes(transactionCtrl, generalLimiter)
 	router_budget := routes.BudgetRoutes(budgetCtrl, generalLimiter)
 	router_goals := routes.GoalsRoutes(goalsCtrl, generalLimiter)
+	router_familie := routes.FamilieRoutes(familieCtrl, generalLimiter)
 
 	subRoiter.Mount("/api/v1/users", router)
 	subRoiter.Mount("/api/v1/categories", router_category)
 	subRoiter.Mount("/api/v1/transactions", router_transaction)
 	subRoiter.Mount("/api/v1/budgets", router_budget)
 	subRoiter.Mount("/api/v1/goals", router_goals)
+	subRoiter.Mount("/api/v1/familie", router_familie)
 
 	// ── 5. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{
