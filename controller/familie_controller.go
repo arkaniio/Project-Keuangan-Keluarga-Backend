@@ -16,8 +16,8 @@ type ControllerHandlerFamilie struct {
 	FamilieService service.FamilieService
 }
 
-func NewControllerHandlerFamilie(familieService service.FamilieService) *ControllerHandlerFamilie {
-	return &ControllerHandlerFamilie{FamilieService: familieService}
+func NewControllerHandlerFamilie(familieService service.FamilieService) ControllerHandlerFamilie {
+	return ControllerHandlerFamilie{FamilieService: familieService}
 }
 
 func (c *ControllerHandlerFamilie) CreateNewFamilie_Bp(w http.ResponseWriter, r *http.Request) {
