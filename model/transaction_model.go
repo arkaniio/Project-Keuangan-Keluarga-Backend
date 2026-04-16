@@ -50,16 +50,20 @@ type PayloadTransactionWithCategory struct {
 }
 
 type PayloadTransactionDataCategory struct {
-	Id          uuid.UUID `json:"id"`
-	UserId      uuid.UUID `json:"user_id"`
-	Name        string    `json:"name"`
-	Type        string    `json:"type"`
-	Amount      int64     `json:"amount"`
-	CategoryId  uuid.UUID `json:"category_id"`
-	Description string    `json:"description"`
-	Date        time.Time `json:"date"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	Id          uuid.UUID `db:"id"`
+	UserId      uuid.UUID `db:"user_id"`
+	Name        string    `db:"name"`
+	Type        string    `db:"type"`
+	Amount      int64     `db:"amount"`
+	CategoryId  uuid.UUID `db:"category_id"`
+	Description string    `db:"description"`
+	Date        time.Time `db:"date"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
+}
+
+type PayloadType struct {
+	Type string `json:"type"`
 }
 
 type AvgIncomeDay struct {

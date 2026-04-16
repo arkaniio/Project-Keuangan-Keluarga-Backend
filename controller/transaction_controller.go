@@ -72,9 +72,13 @@ func (c *ControllerHandlerTransaction) UpdateTransactions_Bp(w http.ResponseWrit
 		return
 	}
 
-	var transaction_id model.Transaction
-	if userId != transaction_id.UserId {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to update because you don't have access to update this transaction!", false)
+	transactions_data, err := c.TransactionService.GetTransactionByUserId(ctx, userId)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction by user id!", err.Error())
+		return
+	}
+	if transactions_data.UserId != userId {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to update other transaction!", false)
 		return
 	}
 
@@ -295,6 +299,17 @@ func (c *ControllerHandlerTransaction) GetAvgExpenseMonth_Bp(w http.ResponseWrit
 
 func (c *ControllerHandlerTransaction) GetTransactionDataInExpenseType_Bp(w http.ResponseWriter, r *http.Request) {
 
+	var payload model.PayloadType
+	if err := utils.DecodeJson(r, &payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode json!", err.Error())
+		return
+	}
+
+	if err := utils.ValidatePayloads(payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate the payloads!", err.Error())
+		return
+	}
+
 	middleware_token, err := middleware.GetTokenId(w, r)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token from middleware!", err.Error())
@@ -304,16 +319,10 @@ func (c *ControllerHandlerTransaction) GetTransactionDataInExpenseType_Bp(w http
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token!", false)
 	}
 
-	type_transaction := r.URL.Query().Get("type")
-	if type_transaction == "" {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the type of transaction!", false)
-		return
-	}
-
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	transaction_data, err := c.TransactionService.GetTransactionDataInExpenseType(type_transaction, middleware_token, ctx)
+	transaction_data, err := c.TransactionService.GetTransactionDataInExpenseType(payload.Type, middleware_token, ctx)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction data in expense type!", err.Error())
 		return
@@ -325,6 +334,17 @@ func (c *ControllerHandlerTransaction) GetTransactionDataInExpenseType_Bp(w http
 
 func (c *ControllerHandlerTransaction) GetTransactionDataInIncomeType_Bp(w http.ResponseWriter, r *http.Request) {
 
+	var payload model.PayloadType
+	if err := utils.DecodeJson(r, &payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to decode json!", err.Error())
+		return
+	}
+
+	if err := utils.ValidatePayloads(payload); err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to validate the payloads!", err.Error())
+		return
+	}
+
 	middleware_token, err := middleware.GetTokenId(w, r)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token from middleware!", err.Error())
@@ -334,16 +354,10 @@ func (c *ControllerHandlerTransaction) GetTransactionDataInIncomeType_Bp(w http.
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token!", false)
 	}
 
-	type_transaction := r.URL.Query().Get("type")
-	if type_transaction == "" {
-		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the type of transaction!", false)
-		return
-	}
-
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	transaction_data, err := c.TransactionService.GetTransactionDataInIncomeType(type_transaction, middleware_token, ctx)
+	transaction_data, err := c.TransactionService.GetTransactionDataInIncomeType(payload.Type, middleware_token, ctx)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the transaction data in income type!", err.Error())
 		return

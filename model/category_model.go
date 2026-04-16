@@ -22,11 +22,11 @@ type UpdatePayloadCategory struct {
 }
 
 type PayloadCategoryWithUser struct {
-	Id     uuid.UUID `db:"id"`
-	UserId uuid.UUID `db:"user_id"`
+	Id     uuid.UUID `json:"id"`
+	UserId uuid.UUID `json:"user_id"`
 	User   User      `json:"user"`
-	Name   string    `db:"name"`
-	Type   string    `db:"type"`
+	Name   string    `json:"name"`
+	Type   string    `json:"type"`
 }
 
 type PayloadCategoryWithUserData struct {

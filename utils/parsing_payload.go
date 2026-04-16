@@ -247,3 +247,40 @@ func PayloaUpdateInt64(dest **int64, val int64) {
 	}
 
 }
+
+func ParsingPayloadFamilyMember(payload model.PayloadFamilyMember, userId uuid.UUID) (*model.FamilyMember, error) {
+
+	if userId == uuid.Nil {
+		return nil, errors.New("Failed to get the uuid file type!")
+	}
+
+	return &model.FamilyMember{
+		Id:       uuid.New(),
+		FamilyId: payload.FamilyId,
+		UserId:   userId,
+		Role:     payload.Role,
+		JoinedAt: time.Now().UTC(),
+	}, nil
+
+}
+
+func PayloadJoinDataFamilyMember(payload model.PayloadFamilyMemberWithUserData) (model.PayloadFamilyMemberWithUser, error) {
+
+	if payload.Id == uuid.Nil {
+		return model.PayloadFamilyMemberWithUser{}, errors.New("Failed to get the uuid file type!")
+	}
+
+	return model.PayloadFamilyMemberWithUser{
+		Id:       payload.Id,
+		FamilyId: payload.FamilyId,
+		UserId:   payload.UserId,
+		User: model.User{
+			Id:       payload.UserId,
+			Username: payload.Username,
+			Email:    payload.Email,
+		},
+		Role:     payload.Role,
+		JoinedAt: payload.JoinedAt,
+	}, nil
+
+}

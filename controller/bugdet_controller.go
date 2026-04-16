@@ -87,7 +87,7 @@ func (c *ControllerBudget) UpdateBudget_Bp(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusBadRequest, "Success to update budget data!", true)
+	utils.ResponseSuccess(w, http.StatusOK, "Success to update budget data!", true)
 
 }
 

@@ -13,6 +13,7 @@ import (
 type TransactionService interface {
 	CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error
 	UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error
+	GetTransactionByUserId(ctx context.Context, user_id uuid.UUID) (*model.Transaction, error)
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
 	GetAllTransaction(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
@@ -64,6 +65,7 @@ func (s *repoTransactionCombine) CreateNewTransactions(ctx context.Context, tran
 		if total_amount >= budget_data.Limit_amount {
 			return errors.New("total amount must be lower than limit amount")
 		}
+		return nil
 	}
 
 	if err := s.repoTransaction.CreateNewTransactions(ctx, transactions); err != nil {
@@ -80,6 +82,10 @@ func (s *repoTransactionCombine) GetTotalExpenseByCategory(ctx context.Context, 
 
 func (s *repoTransactionCombine) UpdateTransaction(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadTransaction) error {
 	return s.repoTransaction.UpdateTransaction(ctx, id, payload)
+}
+
+func (s *repoTransactionCombine) GetTransactionByUserId(ctx context.Context, user_id uuid.UUID) (*model.Transaction, error) {
+	return s.repoTransaction.GetTransactionByUserId(ctx, user_id)
 }
 
 func (s *repoTransactionCombine) DeleteTransaction(ctx context.Context, id uuid.UUID) error {

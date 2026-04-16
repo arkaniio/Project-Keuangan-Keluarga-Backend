@@ -22,7 +22,7 @@ func UserRoutes(userCtrl *controller.ControllerHandler, generalLimiter *ratelimi
 	r.Use(middleware.Logger)                              // custom structured JSON logger
 	r.Use(chimw.Recoverer)                                // recover from panics
 	r.Use(chimw.RequestID)                                // inject X-Request-Id header
-	r.Use(middleware.RateLimitMiddleware(generalLimiter))  // general rate limit: 60 req/min
+	r.Use(middleware.RateLimitMiddleware(generalLimiter)) // general rate limit: 60 req/min
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -43,9 +43,8 @@ func UserRoutes(userCtrl *controller.ControllerHandler, generalLimiter *ratelimi
 		r.Use(middleware.MiddlewareAuth)
 		r.Get("/profile", userCtrl.GetProfile)
 		r.Put("/update", userCtrl.UpdateUser)
+		r.Get("/all", userCtrl.GetAllUser)
 	})
-
-	r.Get("/all", userCtrl.GetAllUser)
 
 	return r
 }

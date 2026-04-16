@@ -32,11 +32,11 @@ func NewBudgetRepository(db *sqlx.DB) BudgetRepository {
 func (r *repoBudget) CreateNewBudget(ctx context.Context, payload *model.Budget) error {
 
 	query := `
-		INSERT INTO budgets (id, user_id, category_id, limit_amount, period, start_date, end_date, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO budgets (id, user_id, category_id, limit_amount, period, start_date, end_date, is_active, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
-	_, err := r.db.ExecContext(ctx, query, payload.Id, payload.UserId, payload.Category_Id, payload.Limit_amount, payload.Period, payload.StartDate, payload.EndDate, payload.IsActive)
+	_, err := r.db.ExecContext(ctx, query, payload.Id, payload.UserId, payload.Category_Id, payload.Limit_amount, payload.Period, payload.StartDate, payload.EndDate, payload.IsActive, payload.Created_at)
 	if err != nil {
 		return err
 	}

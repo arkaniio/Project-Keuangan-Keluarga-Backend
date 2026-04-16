@@ -38,7 +38,7 @@ func (r *repoFamilie) CreateNewFamilie(ctx context.Context, familie *model.Famil
 		VALUES ($1, $2, $3, $4);
 	`
 
-	if _, err := tx.ExecContext(ctx, query); err != nil {
+	if _, err := tx.ExecContext(ctx, query, familie.Id, familie.Name, familie.Created_By, familie.Created_at); err != nil {
 		return errors.New("Failed to execute the context!")
 	}
 

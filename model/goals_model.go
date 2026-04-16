@@ -21,7 +21,7 @@ type Goals struct {
 
 type PayloadGoals struct {
 	Id             uuid.UUID `json:"id"`
-	User_id        uuid.UUID `json:"user_id" validate:"required"`
+	User_id        uuid.UUID `json:"user_id"`
 	Name           string    `json:"name" validate:"required"`
 	Target_amount  float64   `json:"target_amount" validate:"required"`
 	Current_amount float64   `json:"current_amount" validate:"required"`
@@ -71,21 +71,21 @@ type PayloadGoalsWithUser struct {
 }
 
 type ProgressGoals struct {
-	Id             uuid.UUID `json:"id"`
-	User_id        uuid.UUID `json:"user_id"`
-	Name           string    `json:"name"`
-	Target_amount  float64   `json:"target_amount"`
-	Current_amount float64   `json:"current_amount"`
-	Target_Date    time.Time `json:"target_date"`
+	Id             uuid.UUID `db:"id"`
+	User_id        uuid.UUID `db:"user_id"`
+	Name           string    `db:"name"`
+	Target_amount  float64   `db:"target_amount"`
+	Current_amount float64   `db:"current_amount"`
+	Target_Date    time.Time `db:"target_date"`
 	Progress       float64   `json:"progress"`
 }
 
 type RemainingDays struct {
-	Id             uuid.UUID `json:"id"`
-	User_id        uuid.UUID `json:"user_id"`
-	Name           string    `json:"name"`
-	Target_amount  float64   `json:"target_amount"`
-	Current_amount float64   `json:"current_amount"`
-	Target_Date    time.Time `json:"target_date"`
-	Remaining_Days int       `json:"remaining_days"`
+	Id             uuid.UUID `db:"id"`
+	User_id        uuid.UUID `db:"user_id"`
+	Name           string    `db:"name"`
+	Target_amount  float64   `db:"target_amount"`
+	Current_amount float64   `db:"current_amount"`
+	Target_Date    time.Time `db:"target_date"`
+	Remaining_Days int       `db:"remaining_days"`
 }

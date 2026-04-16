@@ -6,8 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// Example represents a sample entity for demonstrating the clean architecture layers.
-// Replace or extend this struct when implementing real domain models.
 type User struct {
 	Id          uuid.UUID `db:"id"`
 	Username    string    `db:"username"`

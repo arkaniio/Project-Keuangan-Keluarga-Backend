@@ -146,10 +146,12 @@ func UpdateToolsBudget(payload model.UpdatePayloadBudget, id uuid.UUID) (string,
 
 func UpdateToolsGoals(payload model.PayloadUpdateGoals, user_id uuid.UUID) (string, []interface{}, error) {
 
-	if *payload.Current_amount >= *payload.Target_amount {
-		*payload.Status = "completed"
-	} else {
-		*payload.Status = "active"
+	if payload.Current_amount != nil && payload.Target_amount != nil {
+		if *payload.Current_amount >= *payload.Target_amount {
+			*payload.Status = "completed"
+		} else {
+			*payload.Status = "active"
+		}
 	}
 
 	field := []fieldMapping{
@@ -209,6 +211,21 @@ func UpdateToolsUser(payload model.UpdatePayloadUser, id uuid.UUID) (string, []i
 	}
 
 	return buildUpdateQuery("users", field, id)
+
+}
+
+func UpdateToolsFamilyMember(payload model.UpdateFamilyMember, user_id uuid.UUID) (string, []interface{}, error) {
+
+	field_map := []fieldMapping{
+		{
+			Column: "family_id", Value: valOrNil(payload.FamilyId), IsSet: payload.FamilyId != nil,
+		},
+		{
+			Column: "role", Value: valOrNil(payload.Role), IsSet: payload.Role != nil,
+		},
+	}
+
+	return buildUpdateQuery("family_members", field_map, user_id)
 
 }
 
