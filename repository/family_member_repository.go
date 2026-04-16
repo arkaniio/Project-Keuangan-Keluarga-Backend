@@ -15,7 +15,7 @@ type FamilyMemberRepository interface {
 	CreateFamilyMember(ctx context.Context, member *model.FamilyMember) error
 	UpdateFamilyMember(ctx context.Context, user_id uuid.UUID, payload model.UpdateFamilyMember) error
 	DeleteFamilyMember(ctx context.Context, user_id uuid.UUID) error
-	GetAllFamilyMember(ctx context.Context, params model.PaginationParams) ([]model.PayloadFamilyMemberWithUser, int, error)
+	GetAllFamilyMember(ctx context.Context, family_id uuid.UUID, params model.PaginationParams) ([]model.PayloadFamilyMemberWithUser, int, error)
 	GetFamilyMemberByUserId(ctx context.Context, user_id uuid.UUID) (*model.FamilyMember, error)
 }
 
@@ -104,15 +104,15 @@ func (r *repoFamilyMember) DeleteFamilyMember(ctx context.Context, user_id uuid.
 
 }
 
-func (r *repoFamilyMember) GetAllFamilyMember(ctx context.Context, params model.PaginationParams) ([]model.PayloadFamilyMemberWithUser, int, error) {
+func (r *repoFamilyMember) GetAllFamilyMember(ctx context.Context, family_id uuid.UUID, params model.PaginationParams) ([]model.PayloadFamilyMemberWithUser, int, error) {
 
 	// ── Build dynamic WHERE clause ─────────────────────────────
-	where := ""
-	args := []interface{}{}
-	argIdx := 1
+	where := " WHERE fm.family_id = $1"
+	args := []interface{}{family_id}
+	argIdx := 2
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE fm.role ILIKE $%d", argIdx)
+		where += fmt.Sprintf(" AND fm.role ILIKE $%d", argIdx)
 		args = append(args, "%"+params.Search+"%")
 		argIdx++
 	}
@@ -170,6 +170,9 @@ func (r *repoFamilyMember) GetFamilyMemberByUserId(ctx context.Context, user_id 
 	`
 	var member model.FamilyMember
 	if err := r.db.GetContext(ctx, &member, query, user_id); err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return nil, nil
+		}
 		return nil, errors.New("Failed to get family member by user id: " + err.Error())
 	}
 	return &member, nil

@@ -124,7 +124,12 @@ func (c *ControllerHandlerFamilyMember) GetAllFamilyMember_Bp(w http.ResponseWri
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	paginatedData, err := c.FamilyMemberService.GetAllFamilyMember(ctx, params)
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	paginatedData, err := c.FamilyMemberService.GetAllFamilyMember(ctx, userId, params)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get family members!", err.Error())
 		return
@@ -132,4 +137,29 @@ func (c *ControllerHandlerFamilyMember) GetAllFamilyMember_Bp(w http.ResponseWri
 
 	utils.ResponseSuccess(w, http.StatusOK, "Successfully retrieved family members!", paginatedData)
 
+}
+
+func (c *ControllerHandlerFamilyMember) GetMyMembership_Bp(w http.ResponseWriter, r *http.Request) {
+
+	middleware_token_id, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusUnauthorized, "Failed to get the user id from token!", err.Error())
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	member, err := c.FamilyMemberService.GetFamilyMemberByUserId(ctx, middleware_token_id)
+	if err != nil {
+		utils.ResponseError(w, http.StatusInternalServerError, "Failed to check family membership", err.Error())
+		return
+	}
+
+	if member == nil {
+		utils.ResponseError(w, http.StatusNotFound, "No family membership found for this user", "Member record is empty")
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully retrieved membership!", member)
 }

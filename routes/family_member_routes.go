@@ -34,6 +34,7 @@ func FamilyMemberRoutes(familyMemberCtrl controller.ControllerHandlerFamilyMembe
 	r.Put("/update", familyMemberCtrl.UpdateFamilyMember_Bp)
 	r.Delete("/delete", familyMemberCtrl.DeleteFamilyMember_Bp)
 	r.Get("/all", familyMemberCtrl.GetAllFamilyMember_Bp)
+	r.Get("/me", familyMemberCtrl.GetMyMembership_Bp)
 
 	return r
 }

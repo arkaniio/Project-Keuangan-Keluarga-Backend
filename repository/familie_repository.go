@@ -33,13 +33,25 @@ func (r *repoFamilie) CreateNewFamilie(ctx context.Context, familie *model.Famil
 		return errors.New("Failed to adding the new transaction for this method!")
 	}
 
-	query := `
+	queryFam := `
 		INSERT INTO families(id, name, created_by, created_at)
 		VALUES ($1, $2, $3, $4);
 	`
 
-	if _, err := tx.ExecContext(ctx, query, familie.Id, familie.Name, familie.Created_By, familie.Created_at); err != nil {
-		return errors.New("Failed to execute the context!")
+	if _, err := tx.ExecContext(ctx, queryFam, familie.Id, familie.Name, familie.Created_By, familie.Created_at); err != nil {
+		tx.Rollback()
+		return errors.New("Failed to execute family insert: " + err.Error())
+	}
+
+	// ── Atomic Entry: Add Creator as Family Member ───────────────
+	memberQuery := `
+		INSERT INTO family_members(id, family_id, user_id, role, joined_at)
+		VALUES ($1, $2, $3, $4, $5);
+	`
+	memberId := uuid.New()
+	if _, err := tx.ExecContext(ctx, memberQuery, memberId, familie.Id, familie.Created_By, "kepala keluarga", familie.Created_at); err != nil {
+		tx.Rollback()
+		return errors.New("Failed to execute family member insert: " + err.Error())
 	}
 
 	if err := tx.Commit(); err != nil {

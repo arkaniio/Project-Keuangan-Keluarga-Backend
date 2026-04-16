@@ -139,7 +139,12 @@ func (c *ControllerHandlerTransaction) GetAllTransaction_Bp(w http.ResponseWrite
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	paginatedData, err := c.TransactionService.GetAllTransaction(ctx, params)
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	paginatedData, err := c.TransactionService.GetAllTransaction(ctx, userId, params)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get transactions!", err.Error())
 		return

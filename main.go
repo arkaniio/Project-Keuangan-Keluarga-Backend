@@ -52,40 +52,34 @@ func main() {
 		strictCfg.Rate, strictCfg.Window, strictCfg.BurstCapacity)
 
 	// ── 3. Dependency Injection ──────────────────────────────────
+	// ── 3. Repositories ──────────────────────────────────────────
 	userRepo := repository.NewExampleRepository(db)
-	userSvc := service.NewUserService(userRepo)
-	userCtrl := controller.NewUserController(userSvc)
-
-	// family member & familie injection
 	familieRepo := repository.NewFamilieRepository(db)
-	familieSvc := service.NewFamilieService(familieRepo, userRepo)
-	familieCtrl := controller.NewControllerHandlerFamilie(familieSvc)
-
-	familyMemberRepo := repository.NewFamilyMemberRepository(db)
-	familyMemberSvc := service.NewFamilyMemberService(familyMemberRepo, userRepo)
-	familyMemberCtrl := controller.NewControllerHandlerFamilyMember(familyMemberSvc)
-
-	// category injection
 	categoryRepo := repository.NewCategoryRepository(db)
-	categorySvc := service.NewCategoryService(categoryRepo, userRepo, familyMemberRepo)
-	categoryCtrl := controller.NewControllerHandlerCategory(categorySvc)
-
-	// keuangan (transaction) injection
+	familyMemberRepo := repository.NewFamilyMemberRepository(db)
 	transactionRepo := repository.NewTransactionRepository(db)
 	budgetRepo := repository.NewBudgetRepository(db)
-	transactionSvc := service.NewTransactionService(transactionRepo, budgetRepo, familyMemberRepo)
-	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
-
-	// budget injection
-	budgetSvc := service.NewBudgetService(budgetRepo, userRepo, familyMemberRepo)
-	budgetCtrl := controller.NewBudgetController(budgetSvc)
-
-	// goals injection
 	goalsRepo := repository.NewGoalsRepository(db)
+
+	// ── 4. Services ─────────────────────────────────────────────
+	userSvc := service.NewUserService(userRepo)
+	familieSvc := service.NewFamilieService(familieRepo, userRepo, familyMemberRepo, categoryRepo)
+	familyMemberSvc := service.NewFamilyMemberService(familyMemberRepo, userRepo)
+	categorySvc := service.NewCategoryService(categoryRepo, userRepo, familyMemberRepo)
+	transactionSvc := service.NewTransactionService(transactionRepo, budgetRepo, familyMemberRepo)
+	budgetSvc := service.NewBudgetService(budgetRepo, userRepo, familyMemberRepo)
 	goalsSvc := service.NewGoalsService(goalsRepo, userRepo, familyMemberRepo)
+
+	// ── 5. Controllers ──────────────────────────────────────────
+	userCtrl := controller.NewUserController(userSvc)
+	familieCtrl := controller.NewControllerHandlerFamilie(familieSvc)
+	familyMemberCtrl := controller.NewControllerHandlerFamilyMember(familyMemberSvc)
+	categoryCtrl := controller.NewControllerHandlerCategory(categorySvc)
+	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
+	budgetCtrl := controller.NewBudgetController(budgetSvc)
 	goalsCtrl := controller.NewControllerGoals(goalsSvc)
 
-	// ── 4. Routes ────────────────────────────────────────────────
+	// ── 6. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
 
 	// CORS must be the very first middleware so it handles OPTIONS
@@ -108,6 +102,9 @@ func main() {
 	route.Mount("/api/v1/goals", router_goals)
 	route.Mount("/api/v1/familie", router_familie)
 	route.Mount("/api/v1/family-members", router_family_member)
+
+	// Serving static profile images
+	route.Handle("/uploadsProfile/*", http.StripPrefix("/uploadsProfile/", http.FileServer(http.Dir("./uploadsProfile"))))
 
 	// ── 5. HTTP Server ───────────────────────────────────────────
 	srv := &http.Server{

@@ -90,7 +90,16 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusOK, "Success to login", token)
+	utils.ResponseSuccess(w, http.StatusOK, "Success to login", map[string]interface{}{
+		"token": token,
+		"user": map[string]interface{}{
+			"id":          users.Id,
+			"username":    users.Username,
+			"email":       users.Email,
+			"role":        users.Role,
+			"profile_img": users.Profile_img,
+		},
+	})
 
 }
 

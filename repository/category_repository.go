@@ -16,7 +16,7 @@ type CategoryRepository interface {
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory) error
 	DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
-	GetAllCategory(ctx context.Context, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error)
+	GetAllCategory(ctx context.Context, family_id uuid.UUID, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error)
 }
 
 type repoCategory struct {
@@ -126,21 +126,21 @@ func (r *repoCategory) GetCategoryById(ctx context.Context, id uuid.UUID) (*mode
 
 }
 
-func (r *repoCategory) GetAllCategory(ctx context.Context, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error) {
+func (r *repoCategory) GetAllCategory(ctx context.Context, family_id uuid.UUID, params model.PaginationParams) ([]model.PayloadCategoryWithUser, int, error) {
 
 	// ── Build dynamic WHERE clause ─────────────────────────────
-	where := ""
-	args := []interface{}{}
-	argIdx := 1
+	where := " WHERE fm.family_id = $1"
+	args := []interface{}{family_id}
+	argIdx := 2
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE c.name ILIKE $%d", argIdx)
+		where += fmt.Sprintf(" AND c.name ILIKE $%d", argIdx)
 		args = append(args, "%"+params.Search+"%")
 		argIdx++
 	}
 
 	// ── Count total items ──────────────────────────────────────
-	countQuery := "SELECT COUNT(*) FROM categories c JOIN users u ON c.user_id = u.id" + where
+	countQuery := "SELECT COUNT(*) FROM categories c JOIN family_members fm ON c.family_member_id = fm.id JOIN users u ON c.user_id = u.id" + where
 
 	var totalItems int
 	if err := r.db.GetContext(ctx, &totalItems, countQuery, args...); err != nil {
@@ -153,6 +153,7 @@ func (r *repoCategory) GetAllCategory(ctx context.Context, params model.Paginati
 	dataQuery := fmt.Sprintf(`
 		SELECT c.id, c.user_id, c.family_member_id, u.username, u.email, c.name, c.type
 		FROM categories c
+		JOIN family_members fm ON c.family_member_id = fm.id
 		JOIN users u ON c.user_id = u.id
 		%s
 		ORDER BY c.%s %s

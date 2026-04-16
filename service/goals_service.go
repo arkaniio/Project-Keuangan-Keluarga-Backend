@@ -49,7 +49,24 @@ func (s *GoalsRepo) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 
 func (s *GoalsRepo) GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error) {
 
-	goals_data, total_items, err := s.repo.GetAllGoals(ctx, params, user_id)
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
+	if err != nil {
+		return model.PaginatedResponse{}, err
+	}
+
+	if fm == nil {
+		return model.PaginatedResponse{
+			Items: []model.PayloadGoalsWithUser{},
+			Pagination: model.PaginationMeta{
+				TotalItems:   0,
+				TotalPages:   0,
+				CurrentPage:  params.Page,
+				PerPage:      params.Limit,
+			},
+		}, nil
+	}
+
+	goals_data, total_items, err := s.repo.GetAllGoals(ctx, params, fm.FamilyId)
 	if err != nil {
 		return model.PaginatedResponse{}, errors.New("Failed to get the all goals with the pagination")
 	}
@@ -92,9 +109,17 @@ func (s *GoalsRepo) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload 
 }
 
 func (s *GoalsRepo) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error) {
-	return s.repo.TrackingProgressGoals(ctx, user_id)
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
+	if err != nil || fm == nil {
+		return []model.ProgressGoals{}, nil
+	}
+	return s.repo.TrackingProgressGoals(ctx, fm.FamilyId)
 }
 
 func (s *GoalsRepo) RemainingDaysGoals(ctx context.Context, user_id uuid.UUID) ([]model.RemainingDays, error) {
-	return s.repo.RemainingDaysGoals(ctx, user_id)
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
+	if err != nil || fm == nil {
+		return []model.RemainingDays{}, nil
+	}
+	return s.repo.RemainingDaysGoals(ctx, fm.FamilyId)
 }

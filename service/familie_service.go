@@ -18,18 +18,28 @@ type FamilieService interface {
 }
 
 type repoCombineFamilieAndUser struct {
-	repoFamilie repository.FamilieRepository
-	repoUser    repository.UserRepository
+	repoFamilie      repository.FamilieRepository
+	repoUser         repository.UserRepository
+	repoFamilyMember repository.FamilyMemberRepository
+	repoCategory     repository.CategoryRepository
 }
 
-func NewFamilieService(repoFamilie repository.FamilieRepository, repoUser repository.UserRepository) FamilieService {
+func NewFamilieService(repoFamilie repository.FamilieRepository, repoUser repository.UserRepository, repoFamilyMember repository.FamilyMemberRepository, repoCategory repository.CategoryRepository) FamilieService {
 	return &repoCombineFamilieAndUser{
-		repoFamilie: repoFamilie,
-		repoUser:    repoUser,
+		repoFamilie:      repoFamilie,
+		repoUser:         repoUser,
+		repoFamilyMember: repoFamilyMember,
+		repoCategory:     repoCategory,
 	}
 }
 
 func (s *repoCombineFamilieAndUser) CreateNewFamilie(ctx context.Context, familie *model.Familie) error {
+
+	// Check if user is already a member of any family
+	existingMember, _ := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, familie.Created_By)
+	if existingMember != nil {
+		return errors.New("User is already a member of a family. Cannot create a new one.")
+	}
 
 	users_data, err := s.repoUser.GetUserById(ctx, familie.Created_By)
 	if err != nil {
@@ -40,8 +50,50 @@ func (s *repoCombineFamilieAndUser) CreateNewFamilie(ctx context.Context, famili
 		return errors.New("Failed to access this method the id is not same!")
 	}
 
-	return s.repoFamilie.CreateNewFamilie(ctx, familie)
+	if err := s.repoFamilie.CreateNewFamilie(ctx, familie); err != nil {
+		return err
+	}
 
+	// After successful family creation, seed default categories
+	// We need the family_member_id of the creator (Kepala Keluarga)
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, familie.Created_By)
+	if err == nil && fm != nil {
+		s.seedDefaultCategories(ctx, fm)
+	}
+
+	return nil
+
+}
+
+func (s *repoCombineFamilieAndUser) seedDefaultCategories(ctx context.Context, fm *model.FamilyMember) {
+	defaults := []struct {
+		Name string
+		Type string
+	}{
+		{"Gaji", "income"},
+		{"Bonus", "income"},
+		{"Investasi", "income"},
+		{"Makan & Minum", "expense"},
+		{"Transportasi", "expense"},
+		{"Belanja Rumah Tangga", "expense"},
+		{"Pendidikan", "expense"},
+		{"Kesehatan", "expense"},
+		{"Cicilan", "expense"},
+		{"Tagihan (Listrik/Air)", "expense"},
+		{"Hiburan", "expense"},
+		{"Lainnya", "expense"},
+	}
+
+	for _, d := range defaults {
+		cat := &model.Category{
+			Id:             uuid.New(),
+			UserId:         fm.UserId,
+			FamilyMemberId: fm.Id,
+			Name:           d.Name,
+			Type:           d.Type,
+		}
+		_ = s.repoCategory.CreateNewCategory(ctx, cat) // Best effort seeding
+	}
 }
 
 func (s *repoCombineFamilieAndUser) DeleteFamilie(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {

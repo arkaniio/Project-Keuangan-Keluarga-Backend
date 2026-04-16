@@ -14,11 +14,11 @@ import (
 
 type GoalsRepository interface {
 	CreateNewGoals(ctx context.Context, goals *model.Goals) error
-	GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error)
+	GetAllGoals(ctx context.Context, params model.PaginationParams, family_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error)
 	DeleteGoals(ctx context.Context, user_id uuid.UUID) error
 	UpdateGoals(ctx context.Context, user_id uuid.UUID, payload model.PayloadUpdateGoals) error
-	TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error)
-	RemainingDaysGoals(ctx context.Context, user_id uuid.UUID) ([]model.RemainingDays, error)
+	TrackingProgressGoals(ctx context.Context, family_id uuid.UUID) ([]model.ProgressGoals, error)
+	RemainingDaysGoals(ctx context.Context, family_id uuid.UUID) ([]model.RemainingDays, error)
 }
 
 type repoGoals struct {
@@ -55,12 +55,12 @@ func (r *repoGoals) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 
 }
 
-func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error) {
+func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationParams, family_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error) {
 
-	args := []interface{}{user_id}
+	args := []interface{}{family_id}
 	argIdx := 2
 
-	where := " WHERE g.user_id = $1"
+	where := " WHERE fm.family_id = $1"
 
 	if params.Search != "" {
 		where += fmt.Sprintf(" AND g.name ILIKE $%d", argIdx)
@@ -68,11 +68,15 @@ func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationPara
 		argIdx++
 	}
 
-	total_count_query := "SELECT COUNT(*) FROM goals g LEFT JOIN users u ON g.user_id = u.id" + where
+	total_count_query := `
+		SELECT COUNT(*) 
+		FROM goals g 
+		JOIN family_members fm ON g.family_member_id = fm.id
+		JOIN users u ON g.user_id = u.id` + where
 
 	var total_items int
 	if err := r.db.GetContext(ctx, &total_items, total_count_query, args...); err != nil {
-		return nil, 0, errors.New("Failed to get the total items for get total count")
+		return nil, 0, errors.New("Failed to get the total items for get total count: " + err.Error())
 	}
 
 	offset := utils.CalculateOffset(params.Page, params.Limit)
@@ -80,6 +84,7 @@ func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationPara
 	query := fmt.Sprintf(`
 		SELECT g.id, g.user_id, g.family_member_id, u.username, u.email, COALESCE(u.profile_img, '') as profile_img, g.name, g.target_amount, g.current_amount, g.start_date, g.target_date, g.status, g.created_at, g.updated_at
 		FROM goals g
+		JOIN family_members fm ON g.family_member_id = fm.id
 		LEFT JOIN users u ON g.user_id = u.id
 		%s
 		ORDER BY g.created_at DESC
@@ -91,7 +96,7 @@ func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationPara
 	var goals_data []model.PayloadGoalsWithUser
 	rows, err := r.db.QueryxContext(ctx, query, args...)
 	if err != nil {
-		return nil, 0, errors.New("Failed to get the goals data")
+		return nil, 0, errors.New("Failed to get the goals data: " + err.Error())
 	}
 
 	for rows.Next() {
@@ -161,22 +166,23 @@ func (r *repoGoals) UpdateGoals(ctx context.Context, user_id uuid.UUID, payload 
 
 }
 
-func (r *repoGoals) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID) ([]model.ProgressGoals, error) {
+func (r *repoGoals) TrackingProgressGoals(ctx context.Context, family_id uuid.UUID) ([]model.ProgressGoals, error) {
 
 	query := `
 		SELECT 
-    	id,
-    	name,
-    	target_amount,
-    	current_amount,
-    	target_date
-		FROM goals
-		WHERE user_id = $1;
+    	g.id,
+    	g.name,
+    	g.target_amount,
+    	g.current_amount,
+    	g.target_date
+		FROM goals g
+		JOIN family_members fm ON g.family_member_id = fm.id
+		WHERE fm.family_id = $1;
 	`
 
-	rows, err := r.db.Queryx(query, user_id)
+	rows, err := r.db.QueryxContext(ctx, query, family_id)
 	if err != nil {
-		return nil, errors.New("Failed to get the rows result from db!")
+		return nil, errors.New("Failed to get the rows result from db: " + err.Error())
 	}
 
 	var goals_data []model.ProgressGoals
@@ -195,22 +201,23 @@ func (r *repoGoals) TrackingProgressGoals(ctx context.Context, user_id uuid.UUID
 
 }
 
-func (r *repoGoals) RemainingDaysGoals(ctx context.Context, user_id uuid.UUID) ([]model.RemainingDays, error) {
+func (r *repoGoals) RemainingDaysGoals(ctx context.Context, family_id uuid.UUID) ([]model.RemainingDays, error) {
 
 	query := `
 		SELECT 
-    	id,
-    	name,
-    	target_amount,
-    	current_amount,
-    	target_date
-		FROM goals
-		WHERE user_id = $1;
+    	g.id,
+    	g.name,
+    	g.target_amount,
+    	g.current_amount,
+    	g.target_date
+		FROM goals g
+		JOIN family_members fm ON g.family_member_id = fm.id
+		WHERE fm.family_id = $1;
 	`
 
-	rows, err := r.db.QueryxContext(ctx, query, user_id)
+	rows, err := r.db.QueryxContext(ctx, query, family_id)
 	if err != nil {
-		return nil, errors.New("Failed to get the rows of the result in db!")
+		return nil, errors.New("Failed to get the rows of the result in db: " + err.Error())
 	}
 
 	var goals_data []model.RemainingDays

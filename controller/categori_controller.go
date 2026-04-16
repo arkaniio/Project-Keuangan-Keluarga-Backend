@@ -141,7 +141,12 @@ func (c *ControllerHandlerCategory) GetAllCategory_Bp(w http.ResponseWriter, r *
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
 	defer cancle()
 
-	paginatedData, err := c.CategoryService.GetAllCategory(ctx, params)
+	userId, err := middleware.GetTokenId(w, r)
+	if err != nil {
+		return
+	}
+
+	paginatedData, err := c.CategoryService.GetAllCategory(ctx, userId, params)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get categories!", err.Error())
 		return

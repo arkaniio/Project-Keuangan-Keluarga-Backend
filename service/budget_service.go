@@ -67,7 +67,11 @@ func (s *budgetService) GetBudgetById(ctx context.Context, id uuid.UUID) (*model
 }
 
 func (s *budgetService) GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error) {
-	return s.budgetRepo.GetBudgetByUserId(ctx, user_id)
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
+	if err != nil || fm == nil {
+		return nil, nil
+	}
+	return s.budgetRepo.GetBudgetByUserId(ctx, fm.FamilyId)
 }
 
 func (s *budgetService) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error {
@@ -76,16 +80,24 @@ func (s *budgetService) DeleteBudget(ctx context.Context, id uuid.UUID, user_id 
 
 func (s *budgetService) GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) (model.PaginatedResponse, error) {
 
-	users_data, err := s.repoUser.GetUserById(ctx, user_id)
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
 	if err != nil {
-		return model.PaginatedResponse{}, errors.New("Failed to get the users data!")
+		return model.PaginatedResponse{}, err
 	}
 
-	if users_data.Id != user_id {
-		return model.PaginatedResponse{}, errors.New("Failed to access this method, id is not same!")
+	if fm == nil {
+		return model.PaginatedResponse{
+			Items: []model.BudgetWithCategoryAndUserData{},
+			Pagination: model.PaginationMeta{
+				TotalItems:   0,
+				TotalPages:   0,
+				CurrentPage:  params.Page,
+				PerPage:      params.Limit,
+			},
+		}, nil
 	}
 
-	budgets, total_items, err := s.budgetRepo.GetAllBudget(ctx, params, user_id)
+	budgets, total_items, err := s.budgetRepo.GetAllBudget(ctx, params, fm.FamilyId)
 	if err != nil {
 		return model.PaginatedResponse{}, errors.New("Failed to get the all budgets!")
 	}

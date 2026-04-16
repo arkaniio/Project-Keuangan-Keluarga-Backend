@@ -15,10 +15,10 @@ type BudgetRepository interface {
 	CreateNewBudget(ctx context.Context, payload *model.Budget) error
 	UpdateBudget(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadBudget) error
 	GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Budget, error)
-	GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
-	GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error)
+	GetBudgetByUserId(ctx context.Context, family_id uuid.UUID) (*model.Budget, error)
+	GetActiveBudget(ctx context.Context, family_id uuid.UUID) (*model.Budget, error)
 	DeleteBudget(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
-	GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error)
+	GetAllBudget(ctx context.Context, params model.PaginationParams, family_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error)
 }
 
 type repoBudget struct {
@@ -86,16 +86,17 @@ func (r *repoBudget) GetBudgetById(ctx context.Context, id uuid.UUID) (*model.Bu
 
 }
 
-func (r *repoBudget) GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (*model.Budget, error) {
+func (r *repoBudget) GetBudgetByUserId(ctx context.Context, family_id uuid.UUID) (*model.Budget, error) {
 
 	query := `
-		SELECT id, user_id, category_id, limit_amount, period, start_date, end_date, is_active
-		FROM budgets
-		WHERE user_id = $1
+		SELECT b.id, b.user_id, b.category_id, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active
+		FROM budgets b
+		JOIN family_members fm ON b.family_member_id = fm.id
+		WHERE fm.family_id = $1
 	`
 
 	var budget model.Budget
-	if err := r.db.GetContext(ctx, &budget, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &budget, query, family_id); err != nil {
 		return nil, err
 	}
 
@@ -103,16 +104,17 @@ func (r *repoBudget) GetBudgetByUserId(ctx context.Context, user_id uuid.UUID) (
 
 }
 
-func (r *repoBudget) GetActiveBudget(ctx context.Context, user_id uuid.UUID) (*model.Budget, error) {
+func (r *repoBudget) GetActiveBudget(ctx context.Context, family_id uuid.UUID) (*model.Budget, error) {
 
 	query := `
-		SELECT id, user_id, category_id, limit_amount, period, start_date, end_date, is_active
-		FROM budgets
-		WHERE user_id = $1 AND is_active = true
+		SELECT b.id, b.user_id, b.category_id, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active
+		FROM budgets b
+		JOIN family_members fm ON b.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND b.is_active = true
 	`
 
 	var budget model.Budget
-	if err := r.db.GetContext(ctx, &budget, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &budget, query, family_id); err != nil {
 		return nil, err
 	}
 
@@ -143,12 +145,12 @@ func (r *repoBudget) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uui
 
 }
 
-func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error) {
+func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationParams, family_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error) {
 
-	args := []interface{}{user_id}
+	args := []interface{}{family_id}
 	argIdx := 2
 
-	where := " WHERE b.user_id = $1"
+	where := " WHERE fm.family_id = $1"
 
 	if params.Search != "" {
 		where += fmt.Sprintf(" AND b.period ILIKE $%d", argIdx)
@@ -156,7 +158,7 @@ func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationPa
 		argIdx++
 	}
 
-	countQuery := "SELECT COUNT(*) FROM budgets b JOIN categories c ON b.category_id = c.id JOIN users u ON b.user_id = u.id" + where
+	countQuery := "SELECT COUNT(*) FROM budgets b JOIN family_members fm ON b.family_member_id = fm.id JOIN categories c ON b.category_id = c.id JOIN users u ON b.user_id = u.id" + where
 
 	var total_items int
 	if err := r.db.GetContext(ctx, &total_items, countQuery, args...); err != nil {
@@ -168,6 +170,7 @@ func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationPa
 	query := fmt.Sprintf(`
 		SELECT b.id, b.user_id, b.family_member_id, u.username as user_name, u.email as user_email, c.name as category_name, c.type as category_type, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active, b.created_at, b.updated_at
 		FROM budgets b
+		JOIN family_members fm ON b.family_member_id = fm.id
 		JOIN categories c ON b.category_id = c.id
 		JOIN users u ON b.user_id = u.id
 		%s

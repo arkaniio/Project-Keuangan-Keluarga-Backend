@@ -18,24 +18,24 @@ type TransactionRepository interface {
 	GetTransactionByUserId(ctx context.Context, user_id uuid.UUID) (*model.Transaction, error)
 	DeleteTransaction(ctx context.Context, id uuid.UUID) error
 	GetTransactionById(ctx context.Context, id uuid.UUID) (*model.Transaction, error)
-	GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
-	GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error)
-	GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error)
-	GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error)
-	GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error)
-	GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error)
-	GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error)
-	GetTransactionDataInExpenseType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
-	GetTransactionDataInIncomeType(type_transaction string, user_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
-	GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
-	GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
-	GetTotalExpenseByCategory(ctx context.Context, user_id uuid.UUID, category_id uuid.UUID) (int64, error)
-	GetTotalExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseDay, error)
-	GetTotalExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseWeek, error)
-	GetTotalExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseMonth, error)
-	GetTotalIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeDay, error)
-	GetTotalIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeWeek, error)
-	GetTotalIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeMonth, error)
+	GetAllTransaction(ctx context.Context, family_id uuid.UUID, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error)
+	GetAvgIncomeDay(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeDay, error)
+	GetAvgExpenseDay(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseDay, error)
+	GetAvgIncomeWeek(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeWeek, error)
+	GetAvgExpenseWeek(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseWeek, error)
+	GetAvgIncomeMonth(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeMonth, error)
+	GetAvgExpenseMonth(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseMonth, error)
+	GetTransactionDataInExpenseType(type_transaction string, family_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
+	GetTransactionDataInIncomeType(type_transaction string, family_id uuid.UUID, ctx context.Context) (*model.Transaction, error)
+	GetAvgExpenseDayNameCategory(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error)
+	GetAvgIncomeDayNameCategory(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error)
+	GetTotalExpenseByCategory(ctx context.Context, family_id uuid.UUID, category_id uuid.UUID) (int64, error)
+	GetTotalExpenseDay(ctx context.Context, family_id uuid.UUID) (*model.TotalExpenseDay, error)
+	GetTotalExpenseWeek(ctx context.Context, family_id uuid.UUID) (*model.TotalExpenseWeek, error)
+	GetTotalExpenseMonth(ctx context.Context, family_id uuid.UUID) (*model.TotalExpenseMonth, error)
+	GetTotalIncomeDay(ctx context.Context, family_id uuid.UUID) (*model.TotalIncomeDay, error)
+	GetTotalIncomeWeek(ctx context.Context, family_id uuid.UUID) (*model.TotalIncomeWeek, error)
+	GetTotalIncomeMonth(ctx context.Context, family_id uuid.UUID) (*model.TotalIncomeMonth, error)
 }
 
 type repoTransaction struct {
@@ -85,16 +85,17 @@ func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 
 }
 
-func (r *repoTransaction) GetTotalExpenseByCategory(ctx context.Context, userID, categoryID uuid.UUID) (int64, error) {
+func (r *repoTransaction) GetTotalExpenseByCategory(ctx context.Context, familyID, categoryID uuid.UUID) (int64, error) {
 	query := `
 		SELECT COALESCE(SUM(amount), 0)
-		FROM transactions
-		WHERE user_id = $1
-		AND category_id = $2
-		AND type = 'expense'
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1
+		AND t.category_id = $2
+		AND t.type = 'expense'
 	`
 	var total int64
-	err := r.db.GetContext(ctx, &total, query, userID, categoryID)
+	err := r.db.GetContext(ctx, &total, query, familyID, categoryID)
 	return total, err
 }
 
@@ -178,21 +179,21 @@ func (r *repoTransaction) GetTransactionById(ctx context.Context, id uuid.UUID) 
 
 }
 
-func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error) {
+func (r *repoTransaction) GetAllTransaction(ctx context.Context, family_id uuid.UUID, params model.PaginationParams) ([]model.PayloadTransactionWithCategory, int, error) {
 
 	// ── Build dynamic WHERE clause ─────────────────────────────
-	where := ""
-	args := []interface{}{}
-	argIdx := 1
+	where := " WHERE fm.family_id = $1"
+	args := []interface{}{family_id}
+	argIdx := 2
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE t.description ILIKE $%d", argIdx)
+		where += fmt.Sprintf(" AND t.description ILIKE $%d", argIdx)
 		args = append(args, "%"+params.Search+"%")
 		argIdx++
 	}
 
 	// ── Count total items ──────────────────────────────────────
-	countQuery := "SELECT COUNT(*) FROM transactions t JOIN categories c ON t.category_id = c.id" + where
+	countQuery := "SELECT COUNT(*) FROM transactions t JOIN family_members fm ON t.family_member_id = fm.id JOIN categories c ON t.category_id = c.id" + where
 
 	var totalItems int
 	if err := r.db.GetContext(ctx, &totalItems, countQuery, args...); err != nil {
@@ -205,6 +206,7 @@ func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 	dataQuery := fmt.Sprintf(`
 		SELECT t.id, t.user_id, t.family_member_id, t.type, t.amount, t.category_id, t.description, t.date, t.created_at, t.updated_at, c.name, c.type as category_type
 		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
 		JOIN categories c ON t.category_id = c.id
 		%s
 		ORDER BY t.%s %s
@@ -236,19 +238,20 @@ func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 
 }
 
-func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDay, error) {
+func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeDay, error) {
 
 	query := `
-		SELECT DATE(date) as day,
-			   AVG(amount) as avg_income
-		FROM transactions
-		WHERE user_id = $1 AND type = 'income'
+		SELECT DATE(t.date) as day,
+			   AVG(t.amount) as avg_income
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY day
 		ORDER BY day ASC;
 	`
 
 	var data model.AvgIncomeDay
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the income data svg!" + err.Error())
 	}
 
@@ -256,19 +259,20 @@ func (r *repoTransaction) GetAvgIncomeDay(ctx context.Context, user_id uuid.UUID
 
 }
 
-func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDay, error) {
+func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseDay, error) {
 
 	query := `
-		SELECT DATE_TRUNC('day', date) as day,
-			   AVG(amount) as avg_expense
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'expense'
+		SELECT DATE_TRUNC('day', t.date) as day,
+			   AVG(t.amount) as avg_expense
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY day
 		ORDER BY day ASC;
 	`
 
 	var data model.AvgExpenseDay
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("No data found!")
 	}
 
@@ -276,76 +280,80 @@ func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUI
 
 }
 
-func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error) {
+func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeWeek, error) {
 
 	query := `
-		SELECT DATE_TRUNC('week', date) as week,
-			   AVG(amount) as income
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'income'
+		SELECT DATE_TRUNC('week', t.date) as week,
+			   AVG(t.amount) as income
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY week
 		ORDER BY week
 	`
 
 	var data model.AvgIncomeWeek
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the avg income week!" + err.Error())
 	}
 
 	return &data, nil
 }
 
-func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error) {
+func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseWeek, error) {
 
 	query := `
-		SELECT DATE_TRUNC('week', date) as week,
-			   AVG(amount) as expense
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'expense'
+		SELECT DATE_TRUNC('week', t.date) as week,
+			   AVG(t.amount) as expense
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY week
 		ORDER BY week
 	`
 
 	var data model.AvgExpenseWeek
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the avg expense week!" + err.Error())
 	}
 
 	return &data, nil
 }
 
-func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeMonth, error) {
+func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeMonth, error) {
 
 	query := `
-		SELECT DATE_TRUNC('month', date) as month,
-			   AVG(amount) as income
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'income'
+		SELECT DATE_TRUNC('month', t.date) as month,
+			   AVG(t.amount) as income
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY month
 		ORDER BY month
 	`
 
 	var data model.AvgIncomeMonth
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the avg income month!" + err.Error())
 	}
 
 	return &data, nil
 }
 
-func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseMonth, error) {
+func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseMonth, error) {
 
 	query := `
-		SELECT DATE_TRUNC('month', date) as month,
-			   AVG(amount) as expense
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'expense'
+		SELECT DATE_TRUNC('month', t.date) as month,
+			   AVG(t.amount) as expense
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY month
 		ORDER BY month
 	`
 
 	var data model.AvgExpenseMonth
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the avg expense month!" + err.Error())
 	}
 
@@ -383,21 +391,22 @@ func (r *repoTransaction) GetTransactionDataInIncomeType(type_transaction string
 
 }
 
-func (r *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error) {
+func (r *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, family_id uuid.UUID) (*model.AvgExpenseDayNameCategory, error) {
 
 	query := `
 		SELECT DATE_TRUNC('day', t.date) as day,
 		c.name as name,
 		AVG(t.amount) as avg_expense
 		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
 		JOIN categories c ON t.category_id = c.id
-		WHERE t.user_id = $1 AND t.type = 'expense'
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY day, c.name
 		ORDER BY day DESC
 	`
 
 	var data model.AvgExpenseDayNameCategory
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the data from db using query!")
 	}
 
@@ -405,21 +414,22 @@ func (r *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user
 
 }
 
-func (r *repoTransaction) GetAvgIncomeDayNameCategory(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error) {
+func (r *repoTransaction) GetAvgIncomeDayNameCategory(ctx context.Context, family_id uuid.UUID) (*model.AvgIncomeDayNameCategory, error) {
 
 	query := `
-		SELECT DATE_TRUNC('day', date) as day,
+		SELECT DATE_TRUNC('day', t.date) as day,
 		c.name as category,
 		AVG(t.amount) as avg_income
 		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
 		JOIN categories c ON t.category_id = c.id
-		WHERE t.user_id = $1 AND t.type = 'income'
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY day, category
 		ORDER BY day ASC;
 	`
 
 	var data model.AvgIncomeDayNameCategory
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the data from db using query!" + err.Error())
 	}
 
@@ -427,19 +437,20 @@ func (r *repoTransaction) GetAvgIncomeDayNameCategory(ctx context.Context, user_
 
 }
 
-func (r *repoTransaction) GetTotalExpenseDay(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseDay, error) {
+func (r *repoTransaction) GetTotalExpenseDay(ctx context.Context, family_id uuid.UUID) (*model.TotalExpenseDay, error) {
 
 	query := `
-		SELECT DATE_TRUNC('day', date) as day,
-		SUM(amount) as total_expense
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'expense'
+		SELECT DATE_TRUNC('day', t.date) as day,
+		SUM(t.amount) as total_expense
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY day
 		ORDER BY day ASC;
 	`
 
 	var data model.TotalExpenseDay
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("No rows detected!")
 		}
@@ -450,19 +461,20 @@ func (r *repoTransaction) GetTotalExpenseDay(ctx context.Context, user_id uuid.U
 
 }
 
-func (r *repoTransaction) GetTotalExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseWeek, error) {
+func (r *repoTransaction) GetTotalExpenseWeek(ctx context.Context, family_id uuid.UUID) (*model.TotalExpenseWeek, error) {
 
 	query := `
-		SELECT DATE_TRUNC('week', date) as week,
-		SUM(amount) as total_expense
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'expense'
+		SELECT DATE_TRUNC('week', t.date) as week,
+		SUM(t.amount) as total_expense
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY week
 		ORDER BY week ASC;
 	`
 
 	var data model.TotalExpenseWeek
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("No rows detected!")
 		}
@@ -473,19 +485,20 @@ func (r *repoTransaction) GetTotalExpenseWeek(ctx context.Context, user_id uuid.
 
 }
 
-func (r *repoTransaction) GetTotalExpenseMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalExpenseMonth, error) {
+func (r *repoTransaction) GetTotalExpenseMonth(ctx context.Context, family_id uuid.UUID) (*model.TotalExpenseMonth, error) {
 
 	query := `
-		SELECT DATE_TRUNC('month', date) as month,
-		SUM(amount) as total_expense
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'expense'
+		SELECT DATE_TRUNC('month', t.date) as month,
+		SUM(t.amount) as total_expense
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'expense'
 		GROUP BY month
 		ORDER BY month ASC;
 	`
 
 	var data model.TotalExpenseMonth
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("No rows detected!")
 		}
@@ -496,19 +509,20 @@ func (r *repoTransaction) GetTotalExpenseMonth(ctx context.Context, user_id uuid
 
 }
 
-func (r *repoTransaction) GetTotalIncomeDay(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeDay, error) {
+func (r *repoTransaction) GetTotalIncomeDay(ctx context.Context, family_id uuid.UUID) (*model.TotalIncomeDay, error) {
 
 	query := `
-		SELECT DATE_TRUNC('day', date) as day,
-		SUM(amount) as total_income
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'income'
+		SELECT DATE_TRUNC('day', t.date) as day,
+		SUM(t.amount) as total_income
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY day
 		ORDER BY day ASC;
 	`
 
 	var data model.TotalIncomeDay
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the total income day!" + err.Error())
 	}
 
@@ -516,19 +530,20 @@ func (r *repoTransaction) GetTotalIncomeDay(ctx context.Context, user_id uuid.UU
 
 }
 
-func (r *repoTransaction) GetTotalIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeWeek, error) {
+func (r *repoTransaction) GetTotalIncomeWeek(ctx context.Context, family_id uuid.UUID) (*model.TotalIncomeWeek, error) {
 
 	query := `
-		SELECT DATE_TRUNC('week', date) as week,
-		SUM(amount) as total_income
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'income'
+		SELECT DATE_TRUNC('week', t.date) as week,
+		SUM(t.amount) as total_income
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY week
 		ORDER BY week ASC;
 	`
 
 	var data model.TotalIncomeWeek
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the total income week!" + err.Error())
 	}
 
@@ -536,19 +551,20 @@ func (r *repoTransaction) GetTotalIncomeWeek(ctx context.Context, user_id uuid.U
 
 }
 
-func (r *repoTransaction) GetTotalIncomeMonth(ctx context.Context, user_id uuid.UUID) (*model.TotalIncomeMonth, error) {
+func (r *repoTransaction) GetTotalIncomeMonth(ctx context.Context, family_id uuid.UUID) (*model.TotalIncomeMonth, error) {
 
 	query := `
-		SELECT DATE_TRUNC('month', date) as month,
-		SUM(amount) as total_income
-		FROM transactions 
-		WHERE user_id = $1 AND type = 'income'
+		SELECT DATE_TRUNC('month', t.date) as month,
+		SUM(t.amount) as total_income
+		FROM transactions t
+		JOIN family_members fm ON t.family_member_id = fm.id
+		WHERE fm.family_id = $1 AND t.type = 'income'
 		GROUP BY month
 		ORDER BY month ASC;
 	`
 
 	var data model.TotalIncomeMonth
-	if err := r.db.GetContext(ctx, &data, query, user_id); err != nil {
+	if err := r.db.GetContext(ctx, &data, query, family_id); err != nil {
 		return nil, errors.New("Failed to get the total income month!" + err.Error())
 	}
 

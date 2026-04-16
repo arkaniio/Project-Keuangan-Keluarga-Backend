@@ -57,7 +57,7 @@ func (c *ControllerHandlerFamilie) CreateNewFamilie_Bp(w http.ResponseWriter, r 
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusOK, "Successfully created the new familie!", nil)
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully created the new familie!", familie)
 
 }
 

@@ -15,7 +15,7 @@ type CategoryService interface {
 	UpdateCategory(ctx context.Context, id uuid.UUID, payload model.UpdatePayloadCategory, user_id uuid.UUID) error
 	DeleteCategory(ctx context.Context, id uuid.UUID, user_id uuid.UUID) error
 	GetCategoryById(ctx context.Context, id uuid.UUID) (*model.Category, error)
-	GetAllCategory(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error)
+	GetAllCategory(ctx context.Context, user_id uuid.UUID, params model.PaginationParams) (*model.PaginatedResponse, error)
 }
 
 type repoCategoryCombine struct {
@@ -32,11 +32,11 @@ func (s *repoCategoryCombine) CreateNewCategory(ctx context.Context, categories 
 
 	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, categories.UserId)
 	if err != nil {
-		return errors.New("User is not a member of any family")
+		return errors.New("Failed to verify family membership")
 	}
 
-	if fm.Role != "kepala keluarga" {
-		return errors.New("Unauthorized: Only kepala keluarga can create categories")
+	if fm == nil {
+		return errors.New("Unauthorized: User must be in a family to create categories")
 	}
 
 	categories.FamilyMemberId = fm.Id
@@ -49,11 +49,11 @@ func (s *repoCategoryCombine) UpdateCategory(ctx context.Context, id uuid.UUID, 
 
 	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
 	if err != nil {
-		return errors.New("User is not a member of any family")
+		return errors.New("Failed to verify family membership")
 	}
 
-	if fm.Role != "kepala keluarga" {
-		return errors.New("Unauthorized: Only kepala keluarga can update categories")
+	if fm == nil {
+		return errors.New("Unauthorized: User must be in a family to update categories")
 	}
 
 	return s.repoCategory.UpdateCategory(ctx, id, payload)
@@ -64,11 +64,11 @@ func (s *repoCategoryCombine) DeleteCategory(ctx context.Context, id uuid.UUID, 
 
 	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
 	if err != nil {
-		return errors.New("User is not a member of any family")
+		return errors.New("Failed to verify family membership")
 	}
 
-	if fm.Role != "kepala keluarga" {
-		return errors.New("Unauthorized: Only kepala keluarga can delete categories")
+	if fm == nil {
+		return errors.New("Unauthorized: User must be in a family to delete categories")
 	}
 
 	return s.repoCategory.DeleteCategory(ctx, id, user_id)
@@ -79,8 +79,26 @@ func (s *repoCategoryCombine) GetCategoryById(ctx context.Context, id uuid.UUID)
 	return s.repoCategory.GetCategoryById(ctx, id)
 }
 
-func (s *repoCategoryCombine) GetAllCategory(ctx context.Context, params model.PaginationParams) (*model.PaginatedResponse, error) {
-	items, totalItems, err := s.repoCategory.GetAllCategory(ctx, params)
+func (s *repoCategoryCombine) GetAllCategory(ctx context.Context, user_id uuid.UUID, params model.PaginationParams) (*model.PaginatedResponse, error) {
+
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, user_id)
+	if err != nil {
+		return nil, err
+	}
+
+	if fm == nil {
+		return &model.PaginatedResponse{
+			Items: []model.PayloadCategoryWithUser{},
+			Pagination: model.PaginationMeta{
+				TotalItems:   0,
+				TotalPages:   0,
+				CurrentPage:  params.Page,
+				PerPage:      params.Limit,
+			},
+		}, nil
+	}
+
+	items, totalItems, err := s.repoCategory.GetAllCategory(ctx, fm.FamilyId, params)
 	if err != nil {
 		return nil, err
 	}
