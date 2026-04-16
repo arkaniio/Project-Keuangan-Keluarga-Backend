@@ -57,7 +57,7 @@ func (c *ControllerBudget) CreateNewBudget_Bp(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	utils.ResponseSuccess(w, http.StatusBadRequest, "Success to create new budget data!", true)
+	utils.ResponseSuccess(w, http.StatusOK, "Success to create new budget data!", true)
 
 }
 
@@ -137,6 +137,7 @@ func (c *ControllerBudget) GetAllBudget_Bp(w http.ResponseWriter, r *http.Reques
 	}
 	if middleware_token_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the uuid type for middleware token id!", false)
+		return
 	}
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)

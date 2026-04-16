@@ -94,6 +94,31 @@ func (s *ControllerHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (s *ControllerHandler) GetUsersById(w http.ResponseWriter, r *http.Request) {
+
+	id_params, err := utils.ParamsChiRouter("id", r)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the id params!", err.Error())
+		return
+	}
+	if id_params == uuid.Nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get and detect the id params!", false)
+		return
+	}
+
+	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
+	defer cancle()
+
+	users_data, err := s.service.GetUserById(ctx, id_params)
+	if err != nil {
+		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the users data!", err.Error())
+		return
+	}
+
+	utils.ResponseSuccess(w, http.StatusOK, "Successfully to get the users data!", users_data)
+
+}
+
 func (s *ControllerHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 	user_id, err := middleware.GetTokenId(w, r)
@@ -225,6 +250,7 @@ func (s *ControllerHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	}
 	if middleware_role == "" {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the value of middleware role!", false)
+		return
 	}
 
 	if middleware_role != "kepala keluarga" {

@@ -21,7 +21,8 @@ func CategoryRoutes(categoryCtrl *controller.ControllerHandlerCategory, generalL
 	r.Use(middleware.MiddlewareAuth)                      // auth required
 	r.Use(chimw.Recoverer)                                // recover from panics
 	r.Use(chimw.RequestID)                                // inject X-Request-Id header
-	r.Use(middleware.RateLimitMiddleware(generalLimiter))  // general rate limit: 60 req/min
+	r.Use(middleware.RateLimitMiddleware(generalLimiter)) // general rate limit: 60 req/min
+	r.Use(middleware.CorsMiddleware())
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +34,7 @@ func CategoryRoutes(categoryCtrl *controller.ControllerHandlerCategory, generalL
 	// API v1 routes
 	r.Post("/", categoryCtrl.CreateNewCategory_Bp)
 	r.Put("/update", categoryCtrl.UpdateCategory_Bp)
+	r.Delete("/{id}", categoryCtrl.DeleteCategory_Bp)
 	r.Get("/{id}", categoryCtrl.GetCategoryById_Bp)
 	r.Get("/all", categoryCtrl.GetAllCategory_Bp)
 

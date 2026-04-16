@@ -147,11 +147,13 @@ func UpdateToolsBudget(payload model.UpdatePayloadBudget, id uuid.UUID) (string,
 func UpdateToolsGoals(payload model.PayloadUpdateGoals, user_id uuid.UUID) (string, []interface{}, error) {
 
 	if payload.Current_amount != nil && payload.Target_amount != nil {
+		var status string
 		if *payload.Current_amount >= *payload.Target_amount {
-			*payload.Status = "completed"
+			status = "completed"
 		} else {
-			*payload.Status = "active"
+			status = "active"
 		}
+		payload.Status = &status
 	}
 
 	field := []fieldMapping{

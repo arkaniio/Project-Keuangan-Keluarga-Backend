@@ -22,6 +22,7 @@ func BudgetRoutes(bgt_controller *controller.ControllerBudget, generalLimiter *r
 	r.Use(chimw.Recoverer)                                // recover from panics
 	r.Use(chimw.RequestID)                                // inject X-Request-Id header
 	r.Use(middleware.RateLimitMiddleware(generalLimiter)) // general rate limit: 60 req/min
+	r.Use(middleware.CorsMiddleware())
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,7 @@ func BudgetRoutes(bgt_controller *controller.ControllerBudget, generalLimiter *r
 	// API v1 routes
 	r.Post("/", bgt_controller.CreateNewBudget_Bp)
 	r.Put("/update", bgt_controller.UpdateBudget_Bp)
-	r.Delete("/:id", bgt_controller.DeleteBudget_Bp)
+	r.Delete("/{id}", bgt_controller.DeleteBudget_Bp)
 	r.Get("/", bgt_controller.GetAllBudget_Bp)
 
 	return r

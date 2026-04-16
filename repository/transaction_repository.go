@@ -126,7 +126,7 @@ func (r *repoTransaction) UpdateTransaction(ctx context.Context, id uuid.UUID, p
 func (r *repoTransaction) GetTransactionByUserId(ctx context.Context, user_id uuid.UUID) (*model.Transaction, error) {
 
 	query := `
-		SELECT transactions id, user_id, type, amount, category_id, description, date, created_at, updated_at
+		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at
 		FROM transactions WHERE user_id = $1;
 	`
 
@@ -145,7 +145,7 @@ func (r *repoTransaction) DeleteTransaction(ctx context.Context, id uuid.UUID) e
 	if err != nil {
 		return errors.New("Failed to get and settings the transactions!")
 	}
-	db_tx.Rollback()
+	defer db_tx.Rollback()
 
 	query := `
 		DELETE FROM transactions WHERE id = $1;
@@ -279,12 +279,12 @@ func (r *repoTransaction) GetAvgExpenseDay(ctx context.Context, user_id uuid.UUI
 func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgIncomeWeek, error) {
 
 	query := `
-		SELECT DATE_TRUNC('week', date) as week
-			   AVG(amount) as avg_income_week
+		SELECT DATE_TRUNC('week', date) as week,
+			   AVG(amount) as income
 		FROM transactions 
 		WHERE user_id = $1 AND type = 'income'
-		ORDER BY week
 		GROUP BY week
+		ORDER BY week
 	`
 
 	var data model.AvgIncomeWeek
@@ -298,12 +298,12 @@ func (r *repoTransaction) GetAvgIncomeWeek(ctx context.Context, user_id uuid.UUI
 func (r *repoTransaction) GetAvgExpenseWeek(ctx context.Context, user_id uuid.UUID) (*model.AvgExpenseWeek, error) {
 
 	query := `
-		SELECT DATE_TRUNC('week', date) as week
-			   AVG(amount) as avg_expense_week
+		SELECT DATE_TRUNC('week', date) as week,
+			   AVG(amount) as expense
 		FROM transactions 
 		WHERE user_id = $1 AND type = 'expense'
-		ORDER BY week
 		GROUP BY week
+		ORDER BY week
 	`
 
 	var data model.AvgExpenseWeek
@@ -318,11 +318,11 @@ func (r *repoTransaction) GetAvgIncomeMonth(ctx context.Context, user_id uuid.UU
 
 	query := `
 		SELECT DATE_TRUNC('month', date) as month,
-			   AVG(amount) as avg_income_month
+			   AVG(amount) as income
 		FROM transactions 
 		WHERE user_id = $1 AND type = 'income'
-		ORDER BY month
 		GROUP BY month
+		ORDER BY month
 	`
 
 	var data model.AvgIncomeMonth
@@ -337,11 +337,11 @@ func (r *repoTransaction) GetAvgExpenseMonth(ctx context.Context, user_id uuid.U
 
 	query := `
 		SELECT DATE_TRUNC('month', date) as month,
-			   AVG(amount) as avg_expense_month
+			   AVG(amount) as expense
 		FROM transactions 
 		WHERE user_id = $1 AND type = 'expense'
-		ORDER BY month
 		GROUP BY month
+		ORDER BY month
 	`
 
 	var data model.AvgExpenseMonth
@@ -359,7 +359,7 @@ func (r *repoTransaction) GetTransactionDataInExpenseType(type_transaction strin
 	`
 
 	var transaction model.Transaction
-	if err := r.db.GetContext(ctx, &transaction, query, type_transaction); err != nil {
+	if err := r.db.GetContext(ctx, &transaction, query, type_transaction, user_id); err != nil {
 		return nil, errors.New("Failed to get the transaction!")
 	}
 
@@ -371,11 +371,11 @@ func (r *repoTransaction) GetTransactionDataInIncomeType(type_transaction string
 
 	query := `
 		SELECT id, user_id, type, amount, category_id, description, date, created_at, updated_at 
-		FROM transactions WHERE type = $1;
+		FROM transactions WHERE type = $1 AND user_id = $2;
 	`
 
 	var transaction model.Transaction
-	if err := r.db.GetContext(ctx, &transaction, query, type_transaction); err != nil {
+	if err := r.db.GetContext(ctx, &transaction, query, type_transaction, user_id); err != nil {
 		return nil, errors.New("Failed to get the transaction!")
 	}
 
@@ -387,12 +387,12 @@ func (r *repoTransaction) GetAvgExpenseDayNameCategory(ctx context.Context, user
 
 	query := `
 		SELECT DATE_TRUNC('day', t.date) as day,
-		c.name as category,
-		AVG(t.amount) as avg_amount
+		c.name as name,
+		AVG(t.amount) as avg_expense
 		FROM transactions t
 		JOIN categories c ON t.category_id = c.id
 		WHERE t.user_id = $1 AND t.type = 'expense'
-		GROUP BY day
+		GROUP BY day, c.name
 		ORDER BY day DESC
 	`
 

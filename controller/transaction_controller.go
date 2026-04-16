@@ -182,6 +182,7 @@ func (c *ControllerHandlerTransaction) GetAvgExpenseDay_Bp(w http.ResponseWriter
 	}
 	if middleware_user_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the user id from token!", false)
+		return
 	}
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
@@ -317,6 +318,7 @@ func (c *ControllerHandlerTransaction) GetTransactionDataInExpenseType_Bp(w http
 	}
 	if middleware_token == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token!", false)
+		return
 	}
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
@@ -352,6 +354,7 @@ func (c *ControllerHandlerTransaction) GetTransactionDataInIncomeType_Bp(w http.
 	}
 	if middleware_token == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the token!", false)
+		return
 	}
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)

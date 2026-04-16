@@ -40,6 +40,7 @@ func (c *ControllerGoals) CreateNewGoals_Bp(w http.ResponseWriter, r *http.Reque
 	}
 	if middleware_token_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the uuid type for middleware token id!", false)
+		return
 	}
 
 	goals, err := utils.ParsingPayloadGoals(payload, middleware_token_id)
@@ -73,6 +74,7 @@ func (c *ControllerGoals) GetAllGoals_Bp(w http.ResponseWriter, r *http.Request)
 	}
 	if middleware_token_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the uuid type for middleware token id!", false)
+		return
 	}
 
 	ctx, cancle := context.WithTimeout(r.Context(), time.Second*10)
@@ -93,6 +95,7 @@ func (c *ControllerGoals) DeleteGoals_Bp(w http.ResponseWriter, r *http.Request)
 	middleware_token_id, err := middleware.GetTokenId(w, r)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the middleware id token!", err.Error())
+		return
 	}
 	if middleware_token_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to detect the uuid type!", false)
@@ -116,6 +119,7 @@ func (c *ControllerGoals) UpdateGoals_Bp(w http.ResponseWriter, r *http.Request)
 	middleware_token_id, err := middleware.GetTokenId(w, r)
 	if err != nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to get the middleware id token!", err.Error())
+		return
 	}
 	if middleware_token_id == uuid.Nil {
 		utils.ResponseError(w, http.StatusBadRequest, "Failed to detect the uuid type!", false)

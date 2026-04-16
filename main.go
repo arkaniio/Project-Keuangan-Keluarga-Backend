@@ -11,6 +11,7 @@ import (
 
 	"project-keuangan-keluarga/config"
 	"project-keuangan-keluarga/controller"
+	"project-keuangan-keluarga/middleware"
 	"project-keuangan-keluarga/middleware/ratelimiter"
 	"project-keuangan-keluarga/repository"
 	"project-keuangan-keluarga/routes"
@@ -87,6 +88,12 @@ func main() {
 
 	// ── 4. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()
+
+	// CORS must be the very first middleware so it handles OPTIONS
+	// preflight requests before auth or rate-limit middleware can
+	// reject them.
+	route.Use(middleware.CorsMiddleware())
+
 	router := routes.UserRoutes(userCtrl, generalLimiter, strictLimiter)
 	router_category := routes.CategoryRoutes(categoryCtrl, generalLimiter)
 	router_transaction := routes.KeuanganRoutes(transactionCtrl, generalLimiter)

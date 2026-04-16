@@ -20,6 +20,7 @@ func FamilieRoutes(familieCtrl controller.ControllerHandlerFamilie, generalLimit
 	r.Use(chimw.Recoverer)                                // recover from panics
 	r.Use(chimw.RequestID)                                // inject X-Request-Id header
 	r.Use(middleware.RateLimitMiddleware(generalLimiter)) // general rate limit: 60 req/min
+	r.Use(middleware.CorsMiddleware())
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,8 @@ func FamilieRoutes(familieCtrl controller.ControllerHandlerFamilie, generalLimit
 
 	// API v1 routes
 	r.Post("/", familieCtrl.CreateNewFamilie_Bp)
-	r.Delete("/:id", familieCtrl.DeleteFamilie_Bp)
+	r.Put("/update", familieCtrl.UpdateFamilie_Bp)
+	r.Delete("/{id}", familieCtrl.DeleteFamilie_Bp)
 	r.Get("/all", familieCtrl.GetAllFamilie_Bp)
 
 	return r

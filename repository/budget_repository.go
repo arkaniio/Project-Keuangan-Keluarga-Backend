@@ -61,6 +61,10 @@ func (r *repoBudget) UpdateBudget(ctx context.Context, id uuid.UUID, payload mod
 		return errors.New("Failed to execute the query!")
 	}
 
+	if err := tx.Commit(); err != nil {
+		return errors.New("Failed to commit the transaction!")
+	}
+
 	return nil
 
 }
@@ -131,38 +135,38 @@ func (r *repoBudget) DeleteBudget(ctx context.Context, id uuid.UUID, user_id uui
 		return errors.New("Failed to execute the context and failed to update using query!")
 	}
 
+	if err := tx.Commit(); err != nil {
+		return errors.New("Failed to commit the transaction!")
+	}
+
 	return nil
 
 }
 
 func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.BudgetWithCategoryAndUserData, int, error) {
 
-	where := ""
-	args := []interface{}{}
-	argIdx := 1
+	args := []interface{}{user_id}
+	argIdx := 2
+
+	where := " WHERE b.user_id = $1"
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE b.limit_amount ILIKE $%d AND b.user_id = $%d", argIdx, argIdx+1)
-		args = append(args, "%"+params.Search+"%", user_id)
+		where += fmt.Sprintf(" AND b.period ILIKE $%d", argIdx)
+		args = append(args, "%"+params.Search+"%")
 		argIdx++
 	}
 
-	qountQuery := `
-		SELECT COUNT(*) FROM budgets b
-		JOIN categories c ON b.category_id = c.id
-		JOIN users u ON b.user_id = u.id
-		WHERE b.user_id = $1
-	`
+	countQuery := "SELECT COUNT(*) FROM budgets b JOIN categories c ON b.category_id = c.id JOIN users u ON b.user_id = u.id" + where
 
 	var total_items int
-	if err := r.db.GetContext(ctx, &total_items, qountQuery, args...); err != nil {
+	if err := r.db.GetContext(ctx, &total_items, countQuery, args...); err != nil {
 		return nil, 0, errors.New("Failed to counting the data!")
 	}
 
 	offset := utils.CalculateOffset(params.Page, params.Limit)
 
 	query := fmt.Sprintf(`
-		SELECT b.id, b.user_id, u.username, u.email, c.name, c.type, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active, b.created_at, b.updated_at
+		SELECT b.id, b.user_id, u.username as user_name, u.email as user_email, c.name as category_name, c.type as category_type, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active, b.created_at, b.updated_at
 		FROM budgets b
 		JOIN categories c ON b.category_id = c.id
 		JOIN users u ON b.user_id = u.id
@@ -181,7 +185,7 @@ func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationPa
 
 	for rows.Next() {
 		var budget_data model.BudgetWithCategoryAndUser
-		if err := rows.StructScan(budget_data); err != nil {
+		if err := rows.StructScan(&budget_data); err != nil {
 			return nil, 0, errors.New("Failed to struct the budget type model")
 		}
 		budgets, err := utils.PayloadJoinDataCategoryAndUser(budget_data)

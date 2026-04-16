@@ -99,7 +99,7 @@ func (r *repoCategory) DeleteCategory(ctx context.Context, id uuid.UUID, user_id
 		DELETE FROM categories WHERE id = $1 AND user_id = $2;
 	`
 
-	if _, err := db_tx.ExecContext(ctx, query, id); err != nil {
+	if _, err := db_tx.ExecContext(ctx, query, id, user_id); err != nil {
 		return errors.New("Failed to execute the db!")
 	}
 

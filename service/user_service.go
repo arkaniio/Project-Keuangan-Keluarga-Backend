@@ -34,7 +34,7 @@ func (s *repoUser) CreateNewUser(ctx context.Context, user *model.User) error {
 		return errors.New("Failed to get the users data based on their email!")
 	}
 	if users_data != nil {
-		return errors.New("Failed to get the users data because the value of users data is nil!")
+		return errors.New("Email already registered!")
 	}
 
 	if err := utils.IsValidEmail(user.Email); err != nil {

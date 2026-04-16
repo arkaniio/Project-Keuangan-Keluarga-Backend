@@ -57,28 +57,28 @@ func (r *repoGoals) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 
 func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationParams, user_id uuid.UUID) ([]model.PayloadGoalsWithUser, int, error) {
 
-	where := ""
-	args := []interface{}{}
-	argIdx := 1
+	args := []interface{}{user_id}
+	argIdx := 2
+
+	where := " WHERE g.user_id = $1"
 
 	if params.Search != "" {
-		where = fmt.Sprintf(" WHERE g.name ILIKE $%d AND g.user_id = $%d", argIdx, argIdx+1)
+		where += fmt.Sprintf(" AND g.name ILIKE $%d", argIdx)
 		args = append(args, "%"+params.Search+"%")
 		argIdx++
 	}
 
-	total_count_query := `
-		SELECT COUNT(*) FROM goals g
-		LEFT JOIN users u ON g.user_id = u.id
-		`
+	total_count_query := "SELECT COUNT(*) FROM goals g LEFT JOIN users u ON g.user_id = u.id" + where
 
 	var total_items int
 	if err := r.db.GetContext(ctx, &total_items, total_count_query, args...); err != nil {
 		return nil, 0, errors.New("Failed to get the total items for get total count")
 	}
 
+	offset := utils.CalculateOffset(params.Page, params.Limit)
+
 	query := fmt.Sprintf(`
-		SELECT g.id, g.user_id, u.username, u.email, u.profile_img, g.name, g.target_amount, g.current_amount, g.start_date, g.target_date, g.status, g.created_at, g.updated_at
+		SELECT g.id, g.user_id, u.username, u.email, COALESCE(u.profile_img, '') as profile_img, g.name, g.target_amount, g.current_amount, g.start_date, g.target_date, g.status, g.created_at, g.updated_at
 		FROM goals g
 		LEFT JOIN users u ON g.user_id = u.id
 		%s
@@ -86,7 +86,7 @@ func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationPara
 		LIMIT $%d OFFSET $%d
 	`, where, argIdx, argIdx+1)
 
-	args = append(args, params.Limit, params.Page)
+	args = append(args, params.Limit, offset)
 
 	var goals_data []model.PayloadGoalsWithUser
 	rows, err := r.db.QueryxContext(ctx, query, args...)
@@ -221,7 +221,7 @@ func (r *repoGoals) RemainingDaysGoals(ctx context.Context, user_id uuid.UUID) (
 			return nil, errors.New("Failed to scan the struct in model!")
 		}
 
-		g.Remaining_Days = g.Target_Date.Compare(time.Now())
+		g.Remaining_Days = int(time.Until(g.Target_Date).Hours() / 24)
 
 		goals_data = append(goals_data, g)
 	}

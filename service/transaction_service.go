@@ -65,7 +65,6 @@ func (s *repoTransactionCombine) CreateNewTransactions(ctx context.Context, tran
 		if total_amount >= budget_data.Limit_amount {
 			return errors.New("total amount must be lower than limit amount")
 		}
-		return nil
 	}
 
 	if err := s.repoTransaction.CreateNewTransactions(ctx, transactions); err != nil {
