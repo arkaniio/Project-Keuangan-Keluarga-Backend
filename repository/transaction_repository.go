@@ -55,15 +55,15 @@ func (r *repoTransaction) CreateNewTransactions(ctx context.Context, transaction
 	}
 
 	query := `
-		INSERT INTO transactions(id, user_id, type, amount, category_id, description, date, created_at, updated_at) 
-		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9);
+		INSERT INTO transactions(id, user_id, family_member_id, type, amount, category_id, description, date, created_at, updated_at) 
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);
 	`
 
 	if transaction.Type != "expense" && transaction.Type != "income" {
 		return errors.New("Failed to detect for a type, invalid type!")
 	}
 
-	rows, err := db_tx.ExecContext(ctx, query, transaction.Id, transaction.UserId, transaction.Type, transaction.Amount, transaction.CategoryId, transaction.Description, transaction.Date, transaction.CreatedAt, transaction.UpdatedAt)
+	rows, err := db_tx.ExecContext(ctx, query, transaction.Id, transaction.UserId, transaction.FamilyMemberId, transaction.Type, transaction.Amount, transaction.CategoryId, transaction.Description, transaction.Date, transaction.CreatedAt, transaction.UpdatedAt)
 	if err != nil {
 		return errors.New("Failed to execute the db!")
 	}
@@ -203,7 +203,7 @@ func (r *repoTransaction) GetAllTransaction(ctx context.Context, params model.Pa
 	offset := utils.CalculateOffset(params.Page, params.Limit)
 
 	dataQuery := fmt.Sprintf(`
-		SELECT t.id, t.user_id, t.type, t.amount, t.category_id, t.description, t.date, t.created_at, t.updated_at
+		SELECT t.id, t.user_id, t.family_member_id, t.type, t.amount, t.category_id, t.description, t.date, t.created_at, t.updated_at, c.name, c.type as category_type
 		FROM transactions t
 		JOIN categories c ON t.category_id = c.id
 		%s

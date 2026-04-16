@@ -22,6 +22,7 @@ func KeuanganRoutes(transactionsCtrl *controller.ControllerHandlerTransaction, g
 	r.Use(chimw.Recoverer)                                // recover from panics
 	r.Use(chimw.RequestID)                                // inject X-Request-Id header
 	r.Use(middleware.RateLimitMiddleware(generalLimiter)) // general rate limit: 60 req/min
+	r.Use(middleware.CorsMiddleware())
 
 	// Health-check endpoint
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {

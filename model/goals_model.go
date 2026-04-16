@@ -9,6 +9,7 @@ import (
 type Goals struct {
 	Id             uuid.UUID `db:"id"`
 	User_id        uuid.UUID `db:"user_id"`
+	FamilyMemberId uuid.UUID `db:"family_member_id"`
 	Name           string    `db:"name"`
 	Target_amount  float64   `db:"target_amount"`
 	Current_amount float64   `db:"current_amount"`
@@ -43,6 +44,7 @@ type PayloadUpdateGoals struct {
 type PayloadGoalsWithUserData struct {
 	Id             uuid.UUID `json:"id"`
 	User_id        uuid.UUID `json:"user_id"`
+	FamilyMemberId uuid.UUID `json:"family_member_id"`
 	Username       string    `json:"username"`
 	Email          string    `json:"email"`
 	Profile_Img    string    `json:"profile_img"`
@@ -59,6 +61,7 @@ type PayloadGoalsWithUserData struct {
 type PayloadGoalsWithUser struct {
 	Id             uuid.UUID `json:"id"`
 	User_id        uuid.UUID `json:"user_id"`
+	FamilyMemberId uuid.UUID `json:"family_member_id"`
 	User           User      `json:"user"`
 	Name           string    `json:"name"`
 	Target_amount  float64   `json:"target_amount"`

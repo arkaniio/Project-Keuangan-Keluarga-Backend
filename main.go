@@ -56,35 +56,34 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	userCtrl := controller.NewUserController(userSvc)
 
-	// category injection
-	categoryRepo := repository.NewCategoryRepository(db)
-	categorySvc := service.NewCategoryService(categoryRepo, userRepo)
-	categoryCtrl := controller.NewControllerHandlerCategory(categorySvc)
-
-	// keuangan injection
-	transactionRepo := repository.NewTransactionRepository(db)
-	budgetRepo := repository.NewBudgetRepository(db)
-	transactionSvc := service.NewTransactionService(transactionRepo, budgetRepo)
-	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
-
-	//budget injection
-	budgetSvc := service.NewBudgetService(budgetRepo, userRepo)
-	budgetCtrl := controller.NewBudgetController(budgetSvc)
-
-	//goals injection
-	goalsRepo := repository.NewGoalsRepository(db)
-	goalsSvc := service.NewGoalsService(goalsRepo, userRepo)
-	goalsCtrl := controller.NewControllerGoals(goalsSvc)
-
-	//familie injection
+	// family member & familie injection
 	familieRepo := repository.NewFamilieRepository(db)
 	familieSvc := service.NewFamilieService(familieRepo, userRepo)
 	familieCtrl := controller.NewControllerHandlerFamilie(familieSvc)
 
-	//family member injection
 	familyMemberRepo := repository.NewFamilyMemberRepository(db)
 	familyMemberSvc := service.NewFamilyMemberService(familyMemberRepo, userRepo)
 	familyMemberCtrl := controller.NewControllerHandlerFamilyMember(familyMemberSvc)
+
+	// category injection
+	categoryRepo := repository.NewCategoryRepository(db)
+	categorySvc := service.NewCategoryService(categoryRepo, userRepo, familyMemberRepo)
+	categoryCtrl := controller.NewControllerHandlerCategory(categorySvc)
+
+	// keuangan (transaction) injection
+	transactionRepo := repository.NewTransactionRepository(db)
+	budgetRepo := repository.NewBudgetRepository(db)
+	transactionSvc := service.NewTransactionService(transactionRepo, budgetRepo, familyMemberRepo)
+	transactionCtrl := controller.NewControllerHandlerTransaction(transactionSvc)
+
+	// budget injection
+	budgetSvc := service.NewBudgetService(budgetRepo, userRepo, familyMemberRepo)
+	budgetCtrl := controller.NewBudgetController(budgetSvc)
+
+	// goals injection
+	goalsRepo := repository.NewGoalsRepository(db)
+	goalsSvc := service.NewGoalsService(goalsRepo, userRepo, familyMemberRepo)
+	goalsCtrl := controller.NewControllerGoals(goalsSvc)
 
 	// ── 4. Routes ────────────────────────────────────────────────
 	route := chi.NewRouter()

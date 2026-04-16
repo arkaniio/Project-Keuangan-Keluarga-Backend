@@ -16,6 +16,7 @@ type FamilyMemberRepository interface {
 	UpdateFamilyMember(ctx context.Context, user_id uuid.UUID, payload model.UpdateFamilyMember) error
 	DeleteFamilyMember(ctx context.Context, user_id uuid.UUID) error
 	GetAllFamilyMember(ctx context.Context, params model.PaginationParams) ([]model.PayloadFamilyMemberWithUser, int, error)
+	GetFamilyMemberByUserId(ctx context.Context, user_id uuid.UUID) (*model.FamilyMember, error)
 }
 
 type repoFamilyMember struct {
@@ -159,4 +160,17 @@ func (r *repoFamilyMember) GetAllFamilyMember(ctx context.Context, params model.
 
 	return member_array, totalItems, nil
 
+}
+
+func (r *repoFamilyMember) GetFamilyMemberByUserId(ctx context.Context, user_id uuid.UUID) (*model.FamilyMember, error) {
+	query := `
+		SELECT id, family_id, user_id, role, joined_at
+		FROM family_members
+		WHERE user_id = $1
+	`
+	var member model.FamilyMember
+	if err := r.db.GetContext(ctx, &member, query, user_id); err != nil {
+		return nil, errors.New("Failed to get family member by user id: " + err.Error())
+	}
+	return &member, nil
 }

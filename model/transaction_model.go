@@ -7,15 +7,16 @@ import (
 )
 
 type Transaction struct {
-	Id          uuid.UUID `db:"id"`
-	UserId      uuid.UUID `db:"user_id"`
-	Type        string    `db:"type"`
-	Amount      int64     `db:"amount"`
-	CategoryId  uuid.UUID `db:"category_id"`
-	Description string    `db:"description"`
-	Date        time.Time `db:"date"`
-	CreatedAt   time.Time `db:"created_at"`
-	UpdatedAt   time.Time `db:"updated_at"`
+	Id             uuid.UUID `db:"id"`
+	UserId         uuid.UUID `db:"user_id"`
+	FamilyMemberId uuid.UUID `db:"family_member_id"`
+	Type           string    `db:"type"`
+	Amount         int64     `db:"amount"`
+	CategoryId     uuid.UUID `db:"category_id"`
+	Description    string    `db:"description"`
+	Date           time.Time `db:"date"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 }
 
 type PayloadTransaction struct {
@@ -37,9 +38,10 @@ type UpdatePayloadTransaction struct {
 }
 
 type PayloadTransactionWithCategory struct {
-	Id          uuid.UUID `json:"id"`
-	UserId      uuid.UUID `json:"user_id"`
-	Type        string    `json:"type"`
+	Id             uuid.UUID `json:"id"`
+	UserId         uuid.UUID `json:"user_id"`
+	FamilyMemberId uuid.UUID `json:"family_member_id"`
+	Type           string    `json:"type"`
 	Amount      int64     `json:"amount"`
 	CategoryId  uuid.UUID `json:"category_id"`
 	Category    Category  `json:"category"`
@@ -50,10 +52,11 @@ type PayloadTransactionWithCategory struct {
 }
 
 type PayloadTransactionDataCategory struct {
-	Id          uuid.UUID `db:"id"`
-	UserId      uuid.UUID `db:"user_id"`
-	Name        string    `db:"name"`
-	Type        string    `db:"type"`
+	Id             uuid.UUID `db:"id"`
+	UserId         uuid.UUID `db:"user_id"`
+	FamilyMemberId uuid.UUID `db:"family_member_id"`
+	Name           string    `db:"name"`
+	Type           string    `db:"type"`
 	Amount      int64     `db:"amount"`
 	CategoryId  uuid.UUID `db:"category_id"`
 	Description string    `db:"description"`

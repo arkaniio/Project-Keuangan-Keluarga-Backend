@@ -20,12 +20,13 @@ type BudgetService interface {
 }
 
 type budgetService struct {
-	budgetRepo repository.BudgetRepository
-	repoUser   repository.UserRepository
+	budgetRepo       repository.BudgetRepository
+	repoUser         repository.UserRepository
+	repoFamilyMember repository.FamilyMemberRepository
 }
 
-func NewBudgetService(budgetRepo repository.BudgetRepository, repoUser repository.UserRepository) BudgetService {
-	return &budgetService{budgetRepo: budgetRepo, repoUser: repoUser}
+func NewBudgetService(budgetRepo repository.BudgetRepository, repoUser repository.UserRepository, repoFamilyMember repository.FamilyMemberRepository) BudgetService {
+	return &budgetService{budgetRepo: budgetRepo, repoUser: repoUser, repoFamilyMember: repoFamilyMember}
 }
 
 func (s *budgetService) CreateNewBudget(ctx context.Context, payload *model.Budget) error {
@@ -37,6 +38,12 @@ func (s *budgetService) CreateNewBudget(ctx context.Context, payload *model.Budg
 	if users_data.Id != payload.UserId {
 		return errors.New("Failed to access this method, id is not same!")
 	}
+
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, payload.UserId)
+	if err != nil {
+		return errors.New("User is not a member of any family")
+	}
+	payload.FamilyMemberId = fm.Id
 
 	return s.budgetRepo.CreateNewBudget(ctx, payload)
 }

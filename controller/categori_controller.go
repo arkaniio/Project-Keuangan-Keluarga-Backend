@@ -72,7 +72,7 @@ func (c *ControllerHandlerCategory) UpdateCategory_Bp(w http.ResponseWriter, r *
 		return
 	}
 
-	if err := c.CategoryService.UpdateCategory(ctx, userId, payload); err != nil {
+	if err := c.CategoryService.UpdateCategory(ctx, payload.Id, payload, userId); err != nil {
 		utils.ResponseError(w, http.StatusInternalServerError, "Failed to update the category!", err.Error())
 		return
 	}

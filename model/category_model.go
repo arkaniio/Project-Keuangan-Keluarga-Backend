@@ -3,10 +3,11 @@ package model
 import "github.com/google/uuid"
 
 type Category struct {
-	Id     uuid.UUID `db:"id"`
-	UserId uuid.UUID `db:"user_id"`
-	Name   string    `db:"name"`
-	Type   string    `db:"type"`
+	Id             uuid.UUID `db:"id"`
+	UserId         uuid.UUID `db:"user_id"`
+	FamilyMemberId uuid.UUID `db:"family_member_id"`
+	Name           string    `db:"name"`
+	Type           string    `db:"type"`
 }
 
 type PayloadCategory struct {
@@ -17,23 +18,26 @@ type PayloadCategory struct {
 }
 
 type UpdatePayloadCategory struct {
-	Name *string `json:"name"`
-	Type *string `json:"type"`
+	Id   uuid.UUID `json:"id"`
+	Name *string   `json:"name"`
+	Type *string   `json:"type"`
 }
 
 type PayloadCategoryWithUser struct {
-	Id     uuid.UUID `json:"id"`
-	UserId uuid.UUID `json:"user_id"`
-	User   User      `json:"user"`
-	Name   string    `json:"name"`
-	Type   string    `json:"type"`
+	Id             uuid.UUID `json:"id"`
+	UserId         uuid.UUID `json:"user_id"`
+	FamilyMemberId uuid.UUID `json:"family_member_id"`
+	User           User      `json:"user"`
+	Name           string    `json:"name"`
+	Type           string    `json:"type"`
 }
 
 type PayloadCategoryWithUserData struct {
-	Id           uuid.UUID `db:"id"`
-	UserId       uuid.UUID `db:"user_id"`
-	Username     string    `db:"username"`
-	Email        string    `db:"email"`
-	CategoryName string    `db:"name"`
-	CategoryType string    `db:"type"`
+	Id               uuid.UUID `db:"id"`
+	UserId           uuid.UUID `db:"user_id"`
+	FamilyMemberId   uuid.UUID `db:"family_member_id"`
+	Username         string    `db:"username"`
+	Email            string    `db:"email"`
+	CategoryName     string    `db:"name"`
+	CategoryType     string    `db:"type"`
 }

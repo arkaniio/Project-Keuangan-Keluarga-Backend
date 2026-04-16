@@ -37,15 +37,22 @@ type TransactionService interface {
 }
 
 type repoTransactionCombine struct {
-	repoTransaction repository.TransactionRepository
-	repoBudget      repository.BudgetRepository
+	repoTransaction  repository.TransactionRepository
+	repoBudget       repository.BudgetRepository
+	repoFamilyMember repository.FamilyMemberRepository
 }
 
-func NewTransactionService(repoTransaction repository.TransactionRepository, repoBudget repository.BudgetRepository) TransactionService {
-	return &repoTransactionCombine{repoTransaction: repoTransaction, repoBudget: repoBudget}
+func NewTransactionService(repoTransaction repository.TransactionRepository, repoBudget repository.BudgetRepository, repoFamilyMember repository.FamilyMemberRepository) TransactionService {
+	return &repoTransactionCombine{repoTransaction: repoTransaction, repoBudget: repoBudget, repoFamilyMember: repoFamilyMember}
 }
 
 func (s *repoTransactionCombine) CreateNewTransactions(ctx context.Context, transactions *model.Transaction) error {
+
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, transactions.UserId)
+	if err != nil {
+		return errors.New("User is not a member of any family")
+	}
+	transactions.FamilyMemberId = fm.Id
 
 	if transactions.Type != "income" && transactions.Type != "expense" {
 		return errors.New("Failed to detect for a type, invalid type!")

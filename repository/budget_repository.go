@@ -32,11 +32,11 @@ func NewBudgetRepository(db *sqlx.DB) BudgetRepository {
 func (r *repoBudget) CreateNewBudget(ctx context.Context, payload *model.Budget) error {
 
 	query := `
-		INSERT INTO budgets (id, user_id, category_id, limit_amount, period, start_date, end_date, is_active, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		INSERT INTO budgets (id, user_id, family_member_id, category_id, limit_amount, period, start_date, end_date, is_active, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	`
 
-	_, err := r.db.ExecContext(ctx, query, payload.Id, payload.UserId, payload.Category_Id, payload.Limit_amount, payload.Period, payload.StartDate, payload.EndDate, payload.IsActive, payload.Created_at)
+	_, err := r.db.ExecContext(ctx, query, payload.Id, payload.UserId, payload.FamilyMemberId, payload.Category_Id, payload.Limit_amount, payload.Period, payload.StartDate, payload.EndDate, payload.IsActive, payload.Created_at)
 	if err != nil {
 		return err
 	}
@@ -166,7 +166,7 @@ func (r *repoBudget) GetAllBudget(ctx context.Context, params model.PaginationPa
 	offset := utils.CalculateOffset(params.Page, params.Limit)
 
 	query := fmt.Sprintf(`
-		SELECT b.id, b.user_id, u.username as user_name, u.email as user_email, c.name as category_name, c.type as category_type, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active, b.created_at, b.updated_at
+		SELECT b.id, b.user_id, b.family_member_id, u.username as user_name, u.email as user_email, c.name as category_name, c.type as category_type, b.limit_amount, b.period, b.start_date, b.end_date, b.is_active, b.created_at, b.updated_at
 		FROM budgets b
 		JOIN categories c ON b.category_id = c.id
 		JOIN users u ON b.user_id = u.id

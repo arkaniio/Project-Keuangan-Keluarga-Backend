@@ -20,12 +20,13 @@ type GoalsService interface {
 }
 
 type GoalsRepo struct {
-	repo     repository.GoalsRepository
-	repoUser repository.UserRepository
+	repo             repository.GoalsRepository
+	repoUser         repository.UserRepository
+	repoFamilyMember repository.FamilyMemberRepository
 }
 
-func NewGoalsService(repo repository.GoalsRepository, repoUser repository.UserRepository) GoalsService {
-	return &GoalsRepo{repo: repo, repoUser: repoUser}
+func NewGoalsService(repo repository.GoalsRepository, repoUser repository.UserRepository, repoFamilyMember repository.FamilyMemberRepository) GoalsService {
+	return &GoalsRepo{repo: repo, repoUser: repoUser, repoFamilyMember: repoFamilyMember}
 }
 
 func (s *GoalsRepo) CreateNewGoals(ctx context.Context, goals *model.Goals) error {
@@ -35,6 +36,12 @@ func (s *GoalsRepo) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 	} else {
 		goals.Status = "active"
 	}
+
+	fm, err := s.repoFamilyMember.GetFamilyMemberByUserId(ctx, goals.User_id)
+	if err != nil {
+		return errors.New("User is not a member of any family")
+	}
+	goals.FamilyMemberId = fm.Id
 
 	return s.repo.CreateNewGoals(ctx, goals)
 

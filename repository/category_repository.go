@@ -36,11 +36,11 @@ func (r *repoCategory) CreateNewCategory(ctx context.Context, categories *model.
 	}
 
 	query := `
-		INSERT INTO categories(id, user_id, name, type) 
-		VALUES($1, $2, $3, $4);
+		INSERT INTO categories(id, user_id, family_member_id, name, type) 
+		VALUES($1, $2, $3, $4, $5);
 	`
 
-	rows, err := db_tx.ExecContext(ctx, query, categories.Id, categories.UserId, categories.Name, categories.Type)
+	rows, err := db_tx.ExecContext(ctx, query, categories.Id, categories.UserId, categories.FamilyMemberId, categories.Name, categories.Type)
 	if err != nil {
 		return errors.New("Failed to execute the db!" + err.Error())
 	}
@@ -151,7 +151,7 @@ func (r *repoCategory) GetAllCategory(ctx context.Context, params model.Paginati
 	offset := utils.CalculateOffset(params.Page, params.Limit)
 
 	dataQuery := fmt.Sprintf(`
-		SELECT c.id, c.user_id, u.username, u.email, c.name, c.type
+		SELECT c.id, c.user_id, c.family_member_id, u.username, u.email, c.name, c.type
 		FROM categories c
 		JOIN users u ON c.user_id = u.id
 		%s

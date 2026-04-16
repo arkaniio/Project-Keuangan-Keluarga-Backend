@@ -37,11 +37,11 @@ func (r *repoGoals) CreateNewGoals(ctx context.Context, goals *model.Goals) erro
 	}
 
 	query := `
-		INSERT INTO goals (id, user_id, name, target_amount, current_amount, start_date, target_date, status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		INSERT INTO goals (id, user_id, family_member_id, name, target_amount, current_amount, start_date, target_date, status, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 	`
 
-	if _, err := tx.ExecContext(ctx, query, goals.Id, goals.User_id, goals.Name, goals.Target_amount, goals.Current_amount, goals.Start_date, goals.Target_date, goals.Status, goals.Created_at, goals.Updated_at); err != nil {
+	if _, err := tx.ExecContext(ctx, query, goals.Id, goals.User_id, goals.FamilyMemberId, goals.Name, goals.Target_amount, goals.Current_amount, goals.Start_date, goals.Target_date, goals.Status, goals.Created_at, goals.Updated_at); err != nil {
 		tx.Rollback()
 		return errors.New("Failed to execute the query for goals!")
 	}
@@ -78,7 +78,7 @@ func (r *repoGoals) GetAllGoals(ctx context.Context, params model.PaginationPara
 	offset := utils.CalculateOffset(params.Page, params.Limit)
 
 	query := fmt.Sprintf(`
-		SELECT g.id, g.user_id, u.username, u.email, COALESCE(u.profile_img, '') as profile_img, g.name, g.target_amount, g.current_amount, g.start_date, g.target_date, g.status, g.created_at, g.updated_at
+		SELECT g.id, g.user_id, g.family_member_id, u.username, u.email, COALESCE(u.profile_img, '') as profile_img, g.name, g.target_amount, g.current_amount, g.start_date, g.target_date, g.status, g.created_at, g.updated_at
 		FROM goals g
 		LEFT JOIN users u ON g.user_id = u.id
 		%s

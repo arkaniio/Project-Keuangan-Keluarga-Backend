@@ -38,12 +38,12 @@ func ParsingPayloadTransaction(payload model.PayloadTransaction, userId uuid.UUI
 		Id:          uuid.New(),
 		UserId:      userId,
 		Type:        payload.Type,
-		Amount:      payload.Amount,
-		CategoryId:  payload.CategoryId,
-		Description: payload.Description,
-		Date:        payload.Date,
-		CreatedAt:   time.Now().UTC(),
-		UpdatedAt:   time.Now().UTC(),
+		Amount:         payload.Amount,
+		CategoryId:     payload.CategoryId,
+		Description:    payload.Description,
+		Date:           payload.Date,
+		CreatedAt:      time.Now().UTC(),
+		UpdatedAt:      time.Now().UTC(),
 	}, nil
 }
 
@@ -57,13 +57,13 @@ func ParsingPayloadBudget(payload model.PayloadBudget, userId uuid.UUID) (*model
 		Id:           uuid.New(),
 		UserId:       userId,
 		Category_Id:  payload.Category_Id,
-		Limit_amount: payload.Limit_amount,
-		Period:       payload.Period,
-		StartDate:    payload.StartDate,
-		EndDate:      payload.EndDate,
-		IsActive:     payload.IsActive,
-		Created_at:   time.Now().UTC(),
-		Updated_at:   time.Now().UTC(),
+		Limit_amount:   payload.Limit_amount,
+		Period:         payload.Period,
+		StartDate:      payload.StartDate,
+		EndDate:        payload.EndDate,
+		IsActive:       payload.IsActive,
+		Created_at:     time.Now().UTC(),
+		Updated_at:     time.Now().UTC(),
 	}, nil
 
 }
@@ -78,7 +78,7 @@ func ParsingPayloadCategory(payload model.PayloadCategory, userId uuid.UUID) (*m
 		Id:     uuid.New(),
 		UserId: userId,
 		Name:   payload.Name,
-		Type:   payload.Type,
+		Type:           payload.Type,
 	}, nil
 }
 
@@ -97,9 +97,10 @@ func PayloadJoinDataTransaction(payload model.PayloadTransactionDataCategory) (*
 	}
 
 	return &model.PayloadTransactionWithCategory{
-		Id:          payload.Id,
-		UserId:      payload.UserId,
-		Type:        payload.Type,
+		Id:             payload.Id,
+		UserId:         payload.UserId,
+		FamilyMemberId: payload.FamilyMemberId,
+		Type:           payload.Type,
 		Amount:      payload.Amount,
 		CategoryId:  payload.CategoryId,
 		Description: payload.Description,
@@ -120,8 +121,9 @@ func PayloadJoinDataCategory(payload model.PayloadCategoryWithUserData) (model.P
 	}
 
 	return model.PayloadCategoryWithUser{
-		Id:     payload.Id,
-		UserId: payload.UserId,
+		Id:             payload.Id,
+		UserId:         payload.UserId,
+		FamilyMemberId: payload.FamilyMemberId,
 		User: model.User{
 			Id:       payload.UserId,
 			Username: payload.Username,
@@ -140,8 +142,9 @@ func PayloadJoinDataCategoryAndUser(payload model.BudgetWithCategoryAndUser) (*m
 	}
 
 	return &model.BudgetWithCategoryAndUserData{
-		Id:     payload.Id,
-		UserId: payload.UserId,
+		Id:             payload.Id,
+		UserId:         payload.UserId,
+		FamilyMemberId: payload.FamilyMemberId,
 		User_Data: model.User{
 			Username: payload.User_Name,
 			Email:    payload.User_Email,
@@ -187,8 +190,9 @@ func PayloadJoinDataGoals(payload model.PayloadGoalsWithUserData) (*model.Payloa
 	}
 
 	return &model.PayloadGoalsWithUser{
-		Id:      payload.Id,
-		User_id: payload.User_id,
+		Id:             payload.Id,
+		User_id:        payload.User_id,
+		FamilyMemberId: payload.FamilyMemberId,
 		User: model.User{
 			Username: payload.Username,
 			Email:    payload.Email,
